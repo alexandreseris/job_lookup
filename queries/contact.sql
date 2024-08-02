@@ -1,0 +1,54 @@
+-- name: ListContact :many
+SELECT
+    contact.*,
+    company.name AS company_name
+FROM
+    contact
+    INNER JOIN company ON company.id = contact.company_id;
+
+-- name: GetContactIdByNames :one
+SELECT
+    contact.id
+FROM
+    contact
+    INNER JOIN company ON company.id = contact.company_id
+WHERE
+    contact.fist_name = ?
+    AND contact.last_name = ?
+    AND company.name = ?
+LIMIT
+    1;
+
+-- name: DeleteContact :exec
+DELETE FROM
+    contact
+WHERE
+    id = ?;
+
+-- name: UpdateContact :exec
+UPDATE
+    contact
+SET
+    company_id = ?,
+    job_position = ?,
+    fist_name = ?,
+    last_name = ?,
+    email = ?,
+    phone_number = ?,
+    notes = ?
+WHERE
+    id = ?;
+
+-- name: InsertContact :one
+INSERT INTO
+    contact (
+        company_id,
+        job_position,
+        fist_name,
+        last_name,
+        email,
+        phone_number,
+        notes
+    )
+VALUES
+    (?, ?, ?, ?, ?, ?, ?) RETURNING *;
