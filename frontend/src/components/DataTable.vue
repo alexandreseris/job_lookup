@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import {
     VAlert,
     VCard,
+    VCardItem,
     VCardActions,
     VSpacer,
     VDataTable,
@@ -13,7 +14,8 @@ import {
     VTooltip,
     VBtn,
     VListItem,
-    VIcon
+    VIcon,
+    VDialog
 
 } from 'vuetify/components'
 import { VNumberInput } from 'vuetify/labs/VNumberInput'
@@ -36,7 +38,7 @@ const props = defineProps<{
 }>()
 
 
-const columnsWithDelete: types.VuetifyHeaders = (props.columns as types.VuetifyHeaders).concat([{ title: 'Delete', key: 'del', sortable: false }])
+const columnsWithDelete: types.VuetifyHeaders = ([{ title: 'Delete', key: 'del', sortable: false }] as types.VuetifyHeaders).concat(props.columns as types.VuetifyHeaders)
 const inputs = ref<types.Inputs[]>([])
 const alertMessage = ref<types.AlertMessage>({
     text: "",
@@ -207,7 +209,7 @@ function formatCol(col: types.Column<T>, value: any): string {
 
 const ACTION_WIDTH = "5em";
 const DATE_WIDTH = "12em";
-const STRING_WIDTH = "10em";
+const STRING_WIDTH = "12em";
 const MULTILINE_WIDTH = "30em";
 const INT_WIDTH = "5em";
 const REL_WIDTH = "10em";
@@ -218,27 +220,41 @@ function getCellStyle(column: types.Column<T>) {
     switch (column.type) {
         case 'date':
             width = DATE_WIDTH
+            break
         case 'string':
             width = STRING_WIDTH
+            break
         case 'multiline':
             width = MULTILINE_WIDTH
+            break
         case 'int':
             width = INT_WIDTH
+            break
         case 'listrel':
             width = LISTREL_WIDTH
+            break
         case 'rel':
             width = REL_WIDTH
+            break
         case 'action':
             width = ACTION_WIDTH
+            break
     }
     return {
         width: width,
         maxWidth: width,
-        overflow: "hidden",
-        whiteSpace: "pre-wrap",
-        padding: "0 !important"
     }
 }
+
+const ACTION_CELL_STYLE = {
+    width: ACTION_WIDTH,
+    maxWidth: ACTION_WIDTH,
+}
+const CELL_CLASSES = [
+    "cell",
+    "v-data-table__td",
+    "v-data-table-column--align-start"
+]
 
 </script>
 
@@ -277,7 +293,7 @@ function getCellStyle(column: types.Column<T>) {
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
             <tr>
                 <template v-for="c in columns" :key="c.key">
-                    <td :style="getCellStyle(c as unknown as types.Column<T>)">
+                    <td class="cell" :style="getCellStyle(c as unknown as types.Column<T>)">
                         <span class="mr-2 cursor-pointer" @click="() => toggleSort(c)">{{ c.title }}</span>
                         <template v-if="isSorted(c)">
                             <v-icon :icon="getSortIcon(c)"></v-icon>
@@ -289,8 +305,7 @@ function getCellStyle(column: types.Column<T>) {
 
         <template v-slot:item="{ item }">
             <tr v-show="!edit" class="v-data-table__tr">
-                <td class="v-data-table__td v-data-table-column--align-start" :style="getCellStyle(c)"
-                    v-for="c in props.columns">
+                <td :class="CELL_CLASSES" :style="getCellStyle(c)" v-for="c in props.columns">
                     <template v-if="Array.isArray(item[c.key])">
                         <v-chip v-for="subitem in item[c.key]">
                             {{ subitem }}
@@ -310,11 +325,39 @@ function getCellStyle(column: types.Column<T>) {
                 </td>
             </tr>
             <tr v-show="edit" class="v-data-table__tr">
-                <td class="cell v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
+                <td :class="CELL_CLASSES" :style="ACTION_CELL_STYLE">
+                    <v-tooltip text="Delete line" location="top">
+                        <template v-slot:activator="{ props }">
+                            <div class="buttonActionContainer">
+                                <v-btn v-bind="props" color="secondary" variant="plain" icon="mdi-delete"
+                                    density="comfortable" @click="deleteItem(item)"></v-btn>
+                            </div>
+                        </template>
+                    </v-tooltip>
+                </td>
+                <td :class="CELL_CLASSES" v-for="c in props.columns" :style="getCellStyle(c)">
                     <v-text-field v-if="c.type === 'string'" v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
                         density="compact" :width="STRING_WIDTH"></v-text-field>
-                    <v-textarea v-else-if="c.type === 'multiline'" v-model="item[c.key]" :rules="buildRules(c)"
-                        ref="inputs" density="compact" no-resize :width="MULTILINE_WIDTH"></v-textarea>
+                    <v-dialog v-else-if="c.type === 'multiline'" scrollable>
+                        <template v-slot:activator="{ props: activatorProps }">
+                            <div class="buttonActionContainer">
+                                <v-btn v-bind="activatorProps" color="secondary" variant="plain" icon="mdi-arrow-expand"
+                                    density="comfortable"></v-btn>
+                            </div>
+                        </template>
+                        <template v-slot:default="{ isActive }">
+                            <v-card>
+                                <v-card-item>
+                                    <v-textarea v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
+                                        :label="c.title" rows="40"></v-textarea>
+                                </v-card-item>
+                                <v-card-actions style="justify-content: flex-start;">
+                                    <v-btn text="Close" color="primary" variant="text" density="comfortable"
+                                        @click="isActive.value = false"></v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </template>
+                    </v-dialog>
                     <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key]" :rules="buildRules(c)"
                         ref="inputs" density="compact" :width="INT_WIDTH"></v-number-input>
                     <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
@@ -324,7 +367,7 @@ function getCellStyle(column: types.Column<T>) {
                         ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
-                                :append-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle'"></v-list-item>
+                                :append-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle-outline'"></v-list-item>
                         </template>
                     </v-select>
                     <v-select v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
@@ -332,17 +375,9 @@ function getCellStyle(column: types.Column<T>) {
                         ref="inputs" density="compact" :width="REL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
-                                :append-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle'"></v-list-item>
+                                :append-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle-outline'"></v-list-item>
                         </template>
                     </v-select>
-                </td>
-                <td class="v-data-table__td v-data-table-column--align-start">
-                    <v-tooltip text="Delete line" location="top">
-                        <template v-slot:activator="{ props }">
-                            <v-btn v-bind="props" color="secondary" variant="plain" icon="mdi-delete"
-                                density="comfortable" @click="deleteItem(item)" :width="ACTION_WIDTH"></v-btn>
-                        </template>
-                    </v-tooltip>
                 </td>
             </tr>
         </template>
@@ -356,7 +391,13 @@ function getCellStyle(column: types.Column<T>) {
 
 .cell {
     white-space: pre-wrap;
-    padding: 0 !important;
     overflow: hidden;
+    padding: 0 !important;
+}
+
+.buttonActionContainer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }
 </style>

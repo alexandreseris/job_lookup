@@ -15,8 +15,8 @@ const columns: types.Columns<Item> = [
     { key: "title", title: "Title", type: "string", requiered: true },
     { key: "date", title: "Date", type: "date", requiered: true },
     { key: "source", title: "Source", type: "rel", requiered: true },
-    { key: "notes", title: "Notes", type: "multiline" },
     { key: "contacts", title: "Contacts", type: "listrel" },
+    { key: "notes", title: "Notes", type: "multiline" },
 
 ]
 

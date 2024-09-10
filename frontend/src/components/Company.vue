@@ -9,8 +9,8 @@ type Item = main.Company
 
 const columns: types.Columns<Item> = [
     { title: 'Name', key: 'name', type: "string", requiered: true },
-    { title: 'Notes', key: 'notes', type: "multiline" },
     { title: 'Types', key: 'company_types', type: "listrel", requiered: true },
+    { title: 'Notes', key: 'notes', type: "multiline" },
 ]
 
 const emptyItem = {
