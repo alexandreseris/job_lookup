@@ -6,12 +6,13 @@ A simple app to manage your job search notes
 
 ## Todo
 
-- Poor error management on save, especially when updating fields that belong to a unique key
+- Some modification fail on save
 
 - When renaming company_type or equivalent, the modification is not propagated to the relations (like companies), which leads to an inconsistent state. Workaround: when this kind of modification happens, refresh the data from the server
 
 - Not very pretty
-  - When clicking on a text area, it should expand over several lines so it can be read easily
+  - When clicking on a text area, it should expand over several lines so it can be read easily => idea remove text areas from the table and add a button to pop a modal to view/edit
+  - when in view mode, spacing is off
 
 - Some elements have a black background for no reason (seems to be a bug in vuetify)
 
