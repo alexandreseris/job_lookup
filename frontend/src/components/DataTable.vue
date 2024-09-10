@@ -104,7 +104,7 @@ function formatDateBeforeSend(item: T): T {
 async function save() {
     for (const inp of inputs.value) {
         if (Array.isArray(inp.errorMessages) && inp.errorMessages.length > 0) {
-            setAlert("error", "Error", "Some part of the forms are invalid, please fix the error before saving")
+            setAlert("error", "Error", "Some part of the forms are invalid, please fix the error before saving (focus especially each inputs on new lines)")
             return
         }
     }
