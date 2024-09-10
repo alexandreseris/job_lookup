@@ -238,7 +238,7 @@ function formatCol(col: types.Column<T>, value: any): string {
         density="compact" hide-default-footer>
         <template v-slot:item="{ item }">
             <tr v-show="!edit" class="v-data-table__tr">
-                <td class="v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
+                <td class="cell v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
                     <template v-if="Array.isArray(item[c.key])">
                         <v-chip v-for="subitem in item[c.key]">
                             {{ subitem }}
@@ -250,29 +250,29 @@ function formatCol(col: types.Column<T>, value: any): string {
                 </td>
             </tr>
             <tr v-show="edit" class="v-data-table__tr">
-                <td class="v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
+                <td class="cell v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
                     <v-text-field v-if="c.type === 'string'" v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
-                        density="compact"></v-text-field>
+                        density="compact" width="15em"></v-text-field>
                     <v-textarea v-else-if="c.type === 'multiline'" v-model="item[c.key]" :rules="buildRules(c)"
-                        ref="inputs" density="compact" no-resize></v-textarea>
+                        ref="inputs" density="compact" no-resize width="30em"></v-textarea>
                     <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key]" :rules="buildRules(c)"
-                        ref="inputs" density="compact"></v-number-input>
+                        ref="inputs" density="compact" width="5em"></v-number-input>
                     <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
                         ref="inputs"></date-input>
                     <v-select v-else-if="c.type === 'listrel' && props.listRelations" v-model="item[c.key] as string[]"
                         :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" chips multiple clearable density="compact">
+                        ref="inputs" chips multiple clearable density="compact" width="15em">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
-                                :prepend-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle'"></v-list-item>
+                                :append-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle'"></v-list-item>
                         </template>
                     </v-select>
                     <v-select v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
                         :items="(props.relations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" density="compact">
+                        ref="inputs" density="compact" width="10em">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
-                                :prepend-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle'"></v-list-item>
+                                :append-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle'"></v-list-item>
                         </template>
                     </v-select>
                 </td>
@@ -288,3 +288,10 @@ function formatCol(col: types.Column<T>, value: any): string {
         </template>
     </v-data-table>
 </template>
+
+<style lang="css" scoped>
+.cell {
+    white-space: pre-wrap;
+    padding: 0 !important;
+}
+</style>

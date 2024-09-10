@@ -15,7 +15,7 @@ const columns: types.Columns<Item> = [
     { key: 'job_position', title: "Position", type: "string", requiered: true },
     { key: 'email', title: "Email", type: "string" },
     { key: 'phone_number', title: "Phone", type: "string" },
-    { key: 'notes', title: "Notes", type: "string" },
+    { key: 'notes', title: "Notes", type: "multiline" },
 ]
 
 const emptyItem = {

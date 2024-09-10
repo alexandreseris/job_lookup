@@ -23,5 +23,5 @@ const dateStr = computed<string>({
 </script>
 
 <template>
-    <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact"></v-text-field>
+    <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact" width="10em"></v-text-field>
 </template>

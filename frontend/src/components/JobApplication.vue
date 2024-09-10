@@ -12,7 +12,7 @@ const columns: types.Columns<Item> = [
     { key: "company_name", title: "Company", type: "rel", requiered: true },
     { key: "job_title", title: "Title", type: "string", requiered: true },
     { key: "status_name", title: "Status", type: "rel", requiered: true },
-    { key: "notes", title: "Notes", type: "string" },
+    { key: "notes", title: "Notes", type: "multiline" },
 ]
 const emptyItem = {
     company_id: 0,
