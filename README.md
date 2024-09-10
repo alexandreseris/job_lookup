@@ -6,6 +6,8 @@ A simple app to manage your job search notes
 
 ## Todo
 
+- On parent entities, add link to the childrens (contact and job applications links on company for instance)
+
 - The selection of relations is badly implemented
   - On the event component, the contact select must be filtered by company (same applies to the job application)
 
