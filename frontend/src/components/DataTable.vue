@@ -12,6 +12,7 @@ import {
     VSelect,
     VTooltip,
     VBtn,
+    VListItem,
 
 } from 'vuetify/components'
 import { VNumberInput } from 'vuetify/labs/VNumberInput'
@@ -261,10 +262,19 @@ function formatCol(col: types.Column<T>, value: any): string {
                     <v-select v-else-if="c.type === 'listrel' && props.listRelations" v-model="item[c.key] as string[]"
                         :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
                         ref="inputs" chips multiple clearable density="compact">
+                        <template v-slot:item="slotItem">
+                            <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
+                                :prepend-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle'"></v-list-item>
+                        </template>
                     </v-select>
                     <v-select v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
                         :items="(props.relations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" density="compact"></v-select>
+                        ref="inputs" density="compact">
+                        <template v-slot:item="slotItem">
+                            <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
+                                :prepend-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle'"></v-list-item>
+                        </template>
+                    </v-select>
                 </td>
                 <td class="v-data-table__td v-data-table-column--align-start">
                     <v-tooltip text="Delete line" location="top">

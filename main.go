@@ -7,7 +7,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 //go:embed all:frontend/dist
@@ -27,9 +26,6 @@ func main() {
 			app,
 		},
 		LogLevel: logger.ERROR,
-		Windows: &windows.Options{
-			Theme: windows.Light,
-		},
 	})
 
 	if err != nil {

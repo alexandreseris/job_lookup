@@ -16,7 +16,7 @@ A simple app to manage your job search notes
   - When clicking on a text area, it should expand over several lines so it can be read easily
   - Add some color
 
-- Some elements have a black background for no reason
+- Some elements have a black background for no reason (seems to be a bug in vuetify)
 
 ## Versions
 
