@@ -6,11 +6,6 @@ A simple app to manage your job search notes
 
 ## Todo
 
-- On parent entities, add link to the childrens (contact and job applications links on company for instance)
-
-- The selection of relations is badly implemented
-  - On the event component, the contact select must be filtered by company (same applies to the job application)
-
 - Poor error management on save, especially when updating fields that belong to a unique key
 
 - When renaming company_type or equivalent, the modification is not propagated to the relations (like companies), which leads to an inconsistent state. Workaround: when this kind of modification happens, refresh the data from the server

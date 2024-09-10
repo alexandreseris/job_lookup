@@ -86,29 +86,45 @@ export const useStore = defineStore('store', () => {
         isInit = true
     }
 
-    const companyTypeNames = computed(function () {
-        return companyTypes.value.map(function (e) { return e.name })
-    })
+    function findCompanyTypeNamesFromCompany(company: main.Company): string[] {
+        return companyTypes.value
+            .map((e) => { return e.name })
+    }
+    function findCompanyNamesFromContact(contact: db.ListContactRow): string[] {
+        return companies.value
+            .map((e) => { return e.name })
+    }
 
-    const companyNames = computed(function () {
-        return companies.value.map(function (e) { return e.name })
-    })
+    function findCompanyNamesFromApplication(application: db.ListJobApplicationRow): string[] {
+        return companies.value
+            .map((e) => { return e.name })
+    }
 
-    const eventSourceNames = computed(function () {
-        return eventSource.value.map(function (e) { return e.name })
-    })
-    const contactNames = computed(function () {
-        return contacts.value.map(function (e) { return `${e.fist_name}, ${e.last_name}` })
-    })
+    function findStatusNamesFromApplication(application: db.ListJobApplicationRow): string[] {
+        return applicationStatus.value
+            .map((e) => { return e.name })
+    }
 
-    const applicationStatusNames = computed(function () {
-        return applicationStatus.value.map(function (e) { return e.name })
-    })
+    function findCompanyNamesFromEvent(event: main.Event): string[] {
+        return companies.value
+            .map((e) => { return e.name })
+    }
+
+    function findSourceNamesFromEvent(event: main.Event): string[] {
+        return eventSource.value
+            .map((e) => { return e.name })
+    }
+
+    function findContactNamesFromEvent(event: main.Event): string[] {
+        return contacts.value
+            .filter((e) => { return e.company_name == event.company_name })
+            .map((e) => { return `${e.fist_name}, ${e.last_name}` })
+    }
 
     const calendarEvents = computed(function () {
         return events.value.map(function (e) {
             const eventDate = utils.parseBackendDate(e.date)
-            return {
+            const calendarEvent: types.CalendarEvent = {
                 title: e.title,
                 start: eventDate,
                 end: eventDate,
@@ -117,7 +133,8 @@ export const useStore = defineStore('store', () => {
                 company: e.company_name,
                 job: e.job_title,
                 contacts: e.contacts,
-            } as types.CalendarEvent
+            }
+            return calendarEvent
         })
     })
 
@@ -130,11 +147,14 @@ export const useStore = defineStore('store', () => {
         eventSource,
         applications,
         applicationStatus,
-        companyTypeNames,
-        companyNames,
-        eventSourceNames,
-        contactNames,
-        applicationStatusNames,
         calendarEvents,
+
+        findCompanyTypeNamesFromCompany,
+        findCompanyNamesFromContact,
+        findCompanyNamesFromApplication,
+        findStatusNamesFromApplication,
+        findCompanyNamesFromEvent,
+        findSourceNamesFromEvent,
+        findContactNamesFromEvent,
     }
 })

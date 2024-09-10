@@ -28,6 +28,6 @@ await store.init()
 <template>
     <data-table :items="store.companies" :delete="back.DeleteCompany" :update="back.UpdateCompany"
         :insert="back.InsertCompany" :empty-item="emptyItem" :columns="columns"
-        :list-relations="{ 'company_types': store.companyTypeNames }">
+        :list-relations="{ 'company_types': store.findCompanyTypeNamesFromCompany }">
     </data-table>
 </template>

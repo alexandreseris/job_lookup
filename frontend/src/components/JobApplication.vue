@@ -31,8 +31,8 @@ await store.init()
 <template>
     <data-table :items="store.applications" :delete="back.DeleteJobApplication" :update="back.UpdateJobApplication"
         :insert="back.InsertJobApplication" :empty-item="emptyItem" :columns="columns" :relations="{
-            company_name: store.companyNames,
-            status_name: store.applicationStatusNames,
+            company_name: store.findCompanyNamesFromApplication,
+            status_name: store.findStatusNamesFromApplication,
         }">
     </data-table>
 </template>

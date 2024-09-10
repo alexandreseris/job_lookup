@@ -46,10 +46,10 @@ async function insertEvent(item: Item) {
 <template>
     <data-table :items="store.events" :delete="back.DeleteEvent" :update="back.UpdateEvent" :insert="insertEvent"
         :empty-item="emptyItem" :columns="columns" :relations="{
-            company_name: store.companyNames,
-            source: store.eventSourceNames,
+            company_name: store.findCompanyNamesFromEvent,
+            source: store.findSourceNamesFromEvent,
         }" :list-relations="{
-            contacts: store.contactNames
+            contacts: store.findContactNamesFromEvent
         }">
     </data-table>
 </template>

@@ -19,8 +19,9 @@ export type Column<T> = {
 export type Columns<T> = Column<T>[]
 export type SortBy<T> = { key: KeyofItem<T>; order?: 'asc' | 'desc'; }[]
 
-export type Relations<T> = { [K in keyof T]?: string[] }
-export type ListRelations<T> = { [K in keyof T]?: string[] }
+export type RelationFinder<T> = (current_obj: T) => string[]
+export type Relations<T> = { [K in keyof T]?: RelationFinder<T> }
+export type ListRelations<T> = { [K in keyof T]?: RelationFinder<T> }
 
 export type LineRender<T> = (item: T) => string[]
 export type Getter<T> = () => Ref<T[]>

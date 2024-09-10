@@ -37,6 +37,6 @@ await store.init()
 <template>
     <data-table :items="store.contacts" :delete="back.DeleteContact" :update="back.UpdateContact"
         :insert="back.InsertContact" :empty-item="emptyItem" :columns="columns"
-        :relations="{ company_name: store.companyNames }">
+        :relations="{ company_name: store.findCompanyNamesFromContact }">
     </data-table>
 </template>

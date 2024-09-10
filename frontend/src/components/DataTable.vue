@@ -238,33 +238,33 @@ function formatCol(col: types.Column<T>, value: any): string {
         <template v-slot:item="{ item }">
             <tr v-show="!edit" class="v-data-table__tr">
                 <td class="v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
-                    <template v-if="Array.isArray(item[c.key as KeyofItem])">
-                        <v-chip v-for="subitem in item[c.key as KeyofItem]">
+                    <template v-if="Array.isArray(item[c.key])">
+                        <v-chip v-for="subitem in item[c.key]">
                             {{ subitem }}
                         </v-chip>
                     </template>
                     <template v-else>
-                        {{ formatCol(c, item[c.key as KeyofItem]) }}
+                        {{ formatCol(c, item[c.key]) }}
                     </template>
                 </td>
             </tr>
             <tr v-show="edit" class="v-data-table__tr">
                 <td class="v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
-                    <v-text-field v-if="c.type === 'string'" v-model="item[c.key as KeyofItem]" :rules="buildRules(c)"
-                        ref="inputs" density="compact"></v-text-field>
-                    <v-textarea v-else-if="c.type === 'multiline'" v-model="item[c.key as KeyofItem]"
-                        :rules="buildRules(c)" ref="inputs" density="compact" no-resize></v-textarea>
-                    <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key as KeyofItem]"
-                        :rules="buildRules(c)" ref="inputs" density="compact"></v-number-input>
-                    <date-input v-else-if="c.type === 'date'" v-model="item[c.key as KeyofItem] as Date"
-                        :rules="buildRules(c)" ref="inputs"></date-input>
-                    <v-select v-else-if="c.type === 'listrel' && props.listRelations"
-                        v-model="item[c.key as KeyofItem] as string[]" :items="props.listRelations[c.key as KeyofItem]"
-                        :rules="buildRules(c)" ref="inputs" chips multiple clearable density="compact">
+                    <v-text-field v-if="c.type === 'string'" v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
+                        density="compact"></v-text-field>
+                    <v-textarea v-else-if="c.type === 'multiline'" v-model="item[c.key]" :rules="buildRules(c)"
+                        ref="inputs" density="compact" no-resize></v-textarea>
+                    <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key]" :rules="buildRules(c)"
+                        ref="inputs" density="compact"></v-number-input>
+                    <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
+                        ref="inputs"></date-input>
+                    <v-select v-else-if="c.type === 'listrel' && props.listRelations" v-model="item[c.key] as string[]"
+                        :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
+                        ref="inputs" chips multiple clearable density="compact">
                     </v-select>
-                    <v-select v-else-if="c.type === 'rel' && props.relations"
-                        v-model="item[c.key as KeyofItem] as string" :items="props.relations[c.key as KeyofItem]"
-                        :rules="buildRules(c)" ref="inputs" density="compact"></v-select>
+                    <v-select v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
+                        :items="(props.relations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
+                        ref="inputs" density="compact"></v-select>
                 </td>
                 <td class="v-data-table__td v-data-table-column--align-start">
                     <v-tooltip text="Delete line" location="top">
