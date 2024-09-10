@@ -28,6 +28,9 @@ export function areObjsEq<T>(item1: T, item2: T): boolean {
             }
             continue
         }
+        if (item1Prop instanceof Date && item2Prop instanceof Date && item1Prop.getTime() !== item2Prop.getTime()) {
+            return false
+        }
         if (item1Prop !== item2Prop) {
             return false
         }
