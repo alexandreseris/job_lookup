@@ -41,7 +41,7 @@ func groupByMap[R interface{}, G interface{}, K comparable](
 		lookup := groupedMap[key]
 		groupedMap[key] = append(lookup, line)
 	}
-	grouped := make([]G, len(groupedMap))
+	grouped := make([]G, 0)
 	for _, v := range groupedMap {
 		var newItem G
 		setGroupFromRaw(v, &newItem)
