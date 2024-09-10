@@ -9,13 +9,6 @@ import EventSource from './components/EventSource.vue'
 import JobApplication from './components/JobApplication.vue';
 import JobApplicationStatus from './components/JobApplicationStatus.vue';
 import Calandar from './components/Calandar.vue';
-import { useStore } from './store'
-
-
-const store = useStore()
-store.init().catch(function (e) {
-  console.error("something went wrong")
-})
 
 const tab = ref("companies")
 </script>

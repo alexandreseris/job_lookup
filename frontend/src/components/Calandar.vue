@@ -5,6 +5,7 @@ import { useStore } from '../store';
 import * as types from './types'
 
 const store = useStore()
+await store.init()
 function renderEvent(event: types.CalendarEvent) {
     return {
         title: `${event.company} - ${event.job}`,

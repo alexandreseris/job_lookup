@@ -6,6 +6,8 @@ import * as utils from './components/utils'
 import * as types from './components/types'
 
 export const useStore = defineStore('store', () => {
+    let isInit = false
+
     const companies = ref<main.Company[]>([])
     const companyTypes = ref<db.CompanyType[]>([])
     const events = ref<main.Event[]>([])
@@ -14,22 +16,74 @@ export const useStore = defineStore('store', () => {
     const applications = ref<db.ListJobApplicationRow[]>([])
     const applicationStatus = ref<db.JobApplicationStatus[]>([])
 
+    async function loadData(callback: () => Promise<void>, errMessage: string) {
+        try {
+            await callback()
+        } catch (e) {
+            console.error(errMessage, e)
+            if (e instanceof Error) {
+                console.error(e.stack)
+            }
+            throw e
+        }
+
+    }
+
+    async function loadCompanies() {
+        await loadData(async () => {
+            companies.value = await back.ListCompanies()
+        }, "failled to load companies")
+    }
+    async function loadCompanyTypes() {
+        await loadData(async () => {
+            companyTypes.value = await back.ListCompanyTypes()
+        }, "failled to load companies types")
+    }
+    async function loadEvents() {
+        await loadData(async () => {
+            let eventsConv = await back.ListEvents()
+            for (const e of eventsConv) {
+                e.date = utils.parseBackendDate(e.date)
+            }
+            events.value = eventsConv
+        }, "failled to load events")
+    }
+    async function loadContact() {
+        await loadData(async () => {
+            contacts.value = await back.ListContact()
+        }, "failled to load contacts")
+    }
+    async function loadEventSource() {
+        await loadData(async () => {
+            eventSource.value = await back.ListEventSource()
+        }, "failled to load events sources")
+    }
+    async function loadJobApplication() {
+        await loadData(async () => {
+            applications.value = await back.ListJobApplication()
+        }, "failled to load job applications")
+    }
+    async function loadJobApplicationStatus() {
+        await loadData(async () => {
+            applicationStatus.value = await back.ListJobApplicationStatus()
+        }, "failled to load job applications status")
+    }
+
     async function init() {
+        if (isInit) {
+            return
+        }
+        console.log("init data")
         await Promise.all([
-            async function () { companies.value = await back.ListCompanies() }(),
-            async function () { companyTypes.value = await back.ListCompanyTypes() }(),
-            async function () {
-                let eventsConv = await back.ListEvents()
-                for (const e of eventsConv) {
-                    e.date = utils.parseBackendDate(e.date)
-                }
-                events.value = eventsConv
-            }(),
-            async function () { contacts.value = await back.ListContact() }(),
-            async function () { eventSource.value = await back.ListEventSource() }(),
-            async function () { applications.value = await back.ListJobApplication() }(),
-            async function () { applicationStatus.value = await back.ListJobApplicationStatus() }(),
+            loadCompanies(),
+            loadCompanyTypes(),
+            loadEvents(),
+            loadContact(),
+            loadEventSource(),
+            loadJobApplication(),
+            loadJobApplicationStatus(),
         ])
+        isInit = true
     }
 
     const companyTypeNames = computed(function () {

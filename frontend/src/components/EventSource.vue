@@ -19,6 +19,7 @@ const emptyItem = {
 
 
 const store = useStore()
+await store.init()
 </script>
 
 <template>

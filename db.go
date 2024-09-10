@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"job_lookup/db"
 	"os"
 	"time"
@@ -19,6 +20,7 @@ const DB_FILE = "data.db"
 
 func MakeDb() (context.Context, *db.Queries) {
 	isTest := IsTest()
+	fmt.Printf("running app (test=%t)\n", isTest)
 	if isTest {
 		os.Remove(DB_FILE)
 	}

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { db, main } from '../../wailsjs/go/models'
+import { db } from '../../wailsjs/go/models'
 import * as back from '../../wailsjs/go/main/App'
 import DataTable from './DataTable.vue'
 import * as types from './types'
@@ -25,6 +25,7 @@ const emptyItem = {
 } as Item
 
 const store = useStore()
+await store.init()
 </script>
 
 <template>
