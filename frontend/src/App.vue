@@ -72,3 +72,9 @@ const tab = ref("companies")
     </v-tabs-window>
   </v-card-text>
 </template>
+
+<style lang="css">
+body {
+  font-family: Tahoma, Verdana, Arial;
+}
+</style>

@@ -11,10 +11,7 @@ A simple app to manage your job search notes
 - When renaming company_type or equivalent, the modification is not propagated to the relations (like companies), which leads to an inconsistent state. Workaround: when this kind of modification happens, refresh the data from the server
 
 - Not very pretty
-  - Font is boring :O
-  - Table cells should be resized a bit more intelligently
   - When clicking on a text area, it should expand over several lines so it can be read easily
-  - Add some color
 
 - Some elements have a black background for no reason (seems to be a bug in vuetify)
 
