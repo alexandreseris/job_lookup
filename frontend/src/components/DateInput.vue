@@ -5,7 +5,8 @@ import * as utils from './utils'
 
 
 const props = defineProps<{
-    rules: ((val: any) => string | boolean)[]
+    rules: ((val: any) => string | boolean)[],
+    width: string
 }>()
 
 const model = defineModel<Date, string>({ required: true })
@@ -23,5 +24,5 @@ const dateStr = computed<string>({
 </script>
 
 <template>
-    <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact" width="10em"></v-text-field>
+    <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact" :width="width"></v-text-field>
 </template>

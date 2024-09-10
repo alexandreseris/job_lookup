@@ -13,6 +13,7 @@ import {
     VTooltip,
     VBtn,
     VListItem,
+    VIcon
 
 } from 'vuetify/components'
 import { VNumberInput } from 'vuetify/labs/VNumberInput'
@@ -203,6 +204,42 @@ function formatCol(col: types.Column<T>, value: any): string {
     throw new Error(`unknown type ${typeof value} for column ${String(col.key)}, value is ${value}`)
 }
 
+
+const ACTION_WIDTH = "5em";
+const DATE_WIDTH = "12em";
+const STRING_WIDTH = "10em";
+const MULTILINE_WIDTH = "30em";
+const INT_WIDTH = "5em";
+const REL_WIDTH = "10em";
+const LISTREL_WIDTH = "15em";
+
+function getCellStyle(column: types.Column<T>) {
+    let width = ""
+    switch (column.type) {
+        case 'date':
+            width = DATE_WIDTH
+        case 'string':
+            width = STRING_WIDTH
+        case 'multiline':
+            width = MULTILINE_WIDTH
+        case 'int':
+            width = INT_WIDTH
+        case 'listrel':
+            width = LISTREL_WIDTH
+        case 'rel':
+            width = REL_WIDTH
+        case 'action':
+            width = ACTION_WIDTH
+    }
+    return {
+        width: width,
+        maxWidth: width,
+        overflow: "hidden",
+        whiteSpace: "pre-wrap",
+        padding: "0 !important"
+    }
+}
+
 </script>
 
 <template>
@@ -236,13 +273,36 @@ function formatCol(col: types.Column<T>, value: any): string {
 
     <v-data-table :headers="edit ? columnsWithDelete : props.columns as types.VuetifyHeaders" :items="props.items"
         density="compact" hide-default-footer>
+
+        <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
+            <tr>
+                <template v-for="c in columns" :key="c.key">
+                    <td :style="getCellStyle(c as unknown as types.Column<T>)">
+                        <span class="mr-2 cursor-pointer" @click="() => toggleSort(c)">{{ c.title }}</span>
+                        <template v-if="isSorted(c)">
+                            <v-icon :icon="getSortIcon(c)"></v-icon>
+                        </template>
+                    </td>
+                </template>
+            </tr>
+        </template>
+
         <template v-slot:item="{ item }">
             <tr v-show="!edit" class="v-data-table__tr">
-                <td class="cell v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
+                <td class="v-data-table__td v-data-table-column--align-start" :style="getCellStyle(c)"
+                    v-for="c in props.columns">
                     <template v-if="Array.isArray(item[c.key])">
                         <v-chip v-for="subitem in item[c.key]">
                             {{ subitem }}
                         </v-chip>
+                    </template>
+                    <template v-else-if="c.type === 'multiline'">
+                        <v-tooltip location="start">
+                            <template v-slot:activator="{ props }">
+                                <div v-bind="props">{{ formatCol(c, item[c.key]) }}</div>
+                            </template>
+                            <div class="multiline">{{ formatCol(c, item[c.key]) }}</div>
+                        </v-tooltip>
                     </template>
                     <template v-else>
                         {{ formatCol(c, item[c.key]) }}
@@ -252,16 +312,16 @@ function formatCol(col: types.Column<T>, value: any): string {
             <tr v-show="edit" class="v-data-table__tr">
                 <td class="cell v-data-table__td v-data-table-column--align-start" v-for="c in props.columns">
                     <v-text-field v-if="c.type === 'string'" v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
-                        density="compact" width="15em"></v-text-field>
+                        density="compact" :width="STRING_WIDTH"></v-text-field>
                     <v-textarea v-else-if="c.type === 'multiline'" v-model="item[c.key]" :rules="buildRules(c)"
-                        ref="inputs" density="compact" no-resize width="30em"></v-textarea>
+                        ref="inputs" density="compact" no-resize :width="MULTILINE_WIDTH"></v-textarea>
                     <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key]" :rules="buildRules(c)"
-                        ref="inputs" density="compact" width="5em"></v-number-input>
+                        ref="inputs" density="compact" :width="INT_WIDTH"></v-number-input>
                     <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
-                        ref="inputs"></date-input>
+                        :width="DATE_WIDTH" ref="inputs"></date-input>
                     <v-select v-else-if="c.type === 'listrel' && props.listRelations" v-model="item[c.key] as string[]"
                         :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" chips multiple clearable density="compact" width="15em">
+                        ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle'"></v-list-item>
@@ -269,7 +329,7 @@ function formatCol(col: types.Column<T>, value: any): string {
                     </v-select>
                     <v-select v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
                         :items="(props.relations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" density="compact" width="10em">
+                        ref="inputs" density="compact" :width="REL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle'"></v-list-item>
@@ -280,7 +340,7 @@ function formatCol(col: types.Column<T>, value: any): string {
                     <v-tooltip text="Delete line" location="top">
                         <template v-slot:activator="{ props }">
                             <v-btn v-bind="props" color="secondary" variant="plain" icon="mdi-delete"
-                                density="comfortable" @click="deleteItem(item)"></v-btn>
+                                density="comfortable" @click="deleteItem(item)" :width="ACTION_WIDTH"></v-btn>
                         </template>
                     </v-tooltip>
                 </td>
@@ -290,8 +350,13 @@ function formatCol(col: types.Column<T>, value: any): string {
 </template>
 
 <style lang="css" scoped>
+.multiline {
+    white-space: pre-wrap;
+}
+
 .cell {
     white-space: pre-wrap;
     padding: 0 !important;
+    overflow: hidden;
 }
 </style>
