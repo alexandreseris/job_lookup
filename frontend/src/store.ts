@@ -115,9 +115,15 @@ export const useStore = defineStore('store', () => {
             .map((e) => { return e.name })
     }
 
+    function findApplicationNamesFromEvent(event: main.Event): string[] {
+        return applications.value
+            .filter((e) => { return e.company_name === event.company_name })
+            .map((e) => { return e.job_title })
+    }
+
     function findContactNamesFromEvent(event: main.Event): string[] {
         return contacts.value
-            .filter((e) => { return e.company_name == event.company_name })
+            .filter((e) => { return e.company_name === event.company_name })
             .map((e) => { return `${e.fist_name}, ${e.last_name}` })
     }
 
@@ -156,5 +162,6 @@ export const useStore = defineStore('store', () => {
         findCompanyNamesFromEvent,
         findSourceNamesFromEvent,
         findContactNamesFromEvent,
+        findApplicationNamesFromEvent,
     }
 })

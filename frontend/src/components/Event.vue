@@ -11,7 +11,7 @@ type Item = main.Event
 
 const columns: types.Columns<Item> = [
     { key: "company_name", title: "Company", type: "rel", requiered: true },
-    { key: "job_title", title: "Job", type: "string", requiered: true },
+    { key: "job_title", title: "Job", type: "rel", requiered: true },
     { key: "title", title: "Title", type: "string", requiered: true },
     { key: "date", title: "Date", type: "date", requiered: true },
     { key: "source", title: "Source", type: "rel", requiered: true },
@@ -48,6 +48,7 @@ async function insertEvent(item: Item) {
         :empty-item="emptyItem" :columns="columns" :relations="{
             company_name: store.findCompanyNamesFromEvent,
             source: store.findSourceNamesFromEvent,
+            job_title: store.findApplicationNamesFromEvent,
         }" :list-relations="{
             contacts: store.findContactNamesFromEvent
         }">
