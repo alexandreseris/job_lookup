@@ -9,7 +9,7 @@ import {
     VChip,
     VTextField,
     VTextarea,
-    VSelect,
+    VAutocomplete,
     VTooltip,
     VBtn,
     VListItem,
@@ -43,7 +43,9 @@ const props = defineProps<{
 }>()
 
 
-const columnsWithDelete: types.VuetifyHeaders = ([{ title: 'Delete', key: 'del', sortable: false }] as types.VuetifyHeaders).concat(props.columns as types.VuetifyHeaders)
+const columnsWithDelete: types.VuetifyHeaders = (
+    [{ title: 'Delete', key: 'del', sortable: false }] as types.VuetifyHeaders
+).concat(props.columns.filter((e) => { return !e.readOnly }) as types.VuetifyHeaders)
 const inputs = ref<types.Inputs[]>([])
 const alertMessage = ref<types.AlertMessage>({
     text: "",
@@ -383,7 +385,7 @@ const searchFilter = computed(() => {
     </v-card>
 
     <v-data-table :headers="edit ? columnsWithDelete : props.columns as types.VuetifyHeaders" :items="searchFilter"
-        density="compact" height="70vh" items-per-page="-1" :items-per-page-options="[-1]">
+        density="compact" height="65vh" items-per-page="-1" :items-per-page-options="[-1]">
 
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
             <tr>
@@ -407,9 +409,10 @@ const searchFilter = computed(() => {
                         </v-chip>
                     </template>
                     <template v-else-if="c.type === 'multiline'">
-                        <v-tooltip location="start">
+                        <v-tooltip location="start" :disabled="formatCol(c, item[c.key]).length === 0">
                             <template v-slot:activator="{ props }">
-                                <div v-bind="props">{{ formatCol(c, item[c.key]) }}</div>
+                                <div v-bind="props" class="multiline multilinecontent">{{ formatCol(c, item[c.key]) }}
+                                </div>
                             </template>
                             <div class="multiline">{{ formatCol(c, item[c.key]) }}</div>
                         </v-tooltip>
@@ -430,7 +433,8 @@ const searchFilter = computed(() => {
                         </template>
                     </v-tooltip>
                 </td>
-                <td :class="CELL_CLASSES" v-for="c in props.columns" :style="getCellStyle(c)">
+                <td :class="CELL_CLASSES" v-for="c in props.columns.filter((e) => !e.readOnly)"
+                    :style="getCellStyle(c)">
                     <v-text-field v-if="c.type === 'string'" v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
                         density="compact" :width="STRING_WIDTH"></v-text-field>
                     <v-dialog v-else-if="c.type === 'multiline'" scrollable>
@@ -444,7 +448,7 @@ const searchFilter = computed(() => {
                             <v-card>
                                 <v-card-item>
                                     <v-textarea v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
-                                        :disabled="c.readOnly" :label="c.title" rows="40"></v-textarea>
+                                        :label="c.title" rows="40"></v-textarea>
                                 </v-card-item>
                                 <v-card-actions style="justify-content: flex-start;">
                                     <v-btn text="Close" color="primary" variant="text" density="comfortable"
@@ -454,27 +458,26 @@ const searchFilter = computed(() => {
                         </template>
                     </v-dialog>
                     <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key]" :rules="buildRules(c)"
-                        ref="inputs" density="compact" :width="INT_WIDTH" :disabled="c.readOnly"></v-number-input>
+                        ref="inputs" density="compact" :width="INT_WIDTH"></v-number-input>
                     <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
-                        :date-width="DATE_WIDTH" :time-width="TIME_WIDTH" ref="inputs"
-                        :disabled="c.readOnly"></date-input>
-                    <v-select v-else-if="c.type === 'listrel' && props.listRelations" v-model="item[c.key] as string[]"
+                        :date-width="DATE_WIDTH" :time-width="TIME_WIDTH" ref="inputs"></date-input>
+                    <v-autocomplete v-else-if="c.type === 'listrel' && props.listRelations"
+                        v-model="item[c.key] as string[]"
                         :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH"
-                        :disabled="c.readOnly">
+                        ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle-outline'"></v-list-item>
                         </template>
-                    </v-select>
-                    <v-select v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
+                    </v-autocomplete>
+                    <v-autocomplete v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
                         :items="(props.relations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" density="compact" :width="REL_WIDTH" :disabled="c.readOnly">
+                        ref="inputs" density="compact" :width="REL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle-outline'"></v-list-item>
                         </template>
-                    </v-select>
+                    </v-autocomplete>
                 </td>
             </tr>
         </template>
@@ -484,6 +487,10 @@ const searchFilter = computed(() => {
 <style lang="css" scoped>
 .multiline {
     white-space: pre-wrap;
+}
+
+.multilinecontent {
+    height: 3em;
 }
 
 .cell {

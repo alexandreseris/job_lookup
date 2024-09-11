@@ -73,9 +73,15 @@ func setFixtures(ctx context.Context, queries *db.Queries) {
 		"type B"))
 
 	c1 := unwrapFixture(queries.InsertCompany(ctx, db.InsertCompanyParams{
-		Name: "company 1", Notes: "company 1 yada yada"}))
+		Name: "company 1", Notes: "company 1 yada yada\nreally long\ndescription\ntoo long\nactually"}))
 	c2 := unwrapFixture(queries.InsertCompany(ctx, db.InsertCompanyParams{
 		Name: "company 2"}))
+	for i := 3; i <= 50; i++ {
+		c := unwrapFixture(queries.InsertCompany(ctx, db.InsertCompanyParams{
+			Name: fmt.Sprintf("company %d", i)}))
+		unwrapFixture(queries.InsertCompanyTypeRel(ctx, db.InsertCompanyTypeRelParams{
+			CompanyID: c.ID, CompanyTypeID: ct1.ID}))
+	}
 
 	unwrapFixture(queries.InsertCompanyTypeRel(ctx, db.InsertCompanyTypeRelParams{
 		CompanyID: c1.ID, CompanyTypeID: ct1.ID}))

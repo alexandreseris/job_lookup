@@ -7,8 +7,7 @@ import * as utils from './utils'
 const props = defineProps<{
     rules: ((val: any) => string | boolean)[],
     dateWidth: string,
-    timeWidth: string,
-    disabled: boolean | undefined
+    timeWidth: string
 }>()
 
 const dateModel = defineModel<Date | null, string>({ required: true })
@@ -32,9 +31,9 @@ watch(timeStr, function (value: string) {
 
 <template>
     <div style="display: flex; flex-direction: row;">
-        <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact" :width="dateWidth"
-            :disabled="disabled"> </v-text-field>
-        <v-text-field type="time" v-model="timeStr" :rules="props.rules" density="compact" :width="timeWidth"
-            :disabled="disabled"></v-text-field>
+        <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact" :width="dateWidth">
+        </v-text-field>
+        <v-text-field type="time" v-model="timeStr" :rules="props.rules" density="compact"
+            :width="timeWidth"></v-text-field>
     </div>
 </template>
