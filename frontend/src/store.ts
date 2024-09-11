@@ -98,7 +98,7 @@ export const useStore = defineStore('store', () => {
     }
 
     async function init() {
-        if (isInit) {
+        if (isInit === true) {
             return
         }
         await _init()

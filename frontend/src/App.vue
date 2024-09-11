@@ -8,7 +8,7 @@ import Event from './components/Event.vue'
 import EventSource from './components/EventSource.vue'
 import JobApplication from './components/JobApplication.vue';
 import JobApplicationStatus from './components/JobApplicationStatus.vue';
-import Calandar from './components/Calandar.vue';
+import Calendar from './components/Calendar.vue';
 
 const tab = ref("companies")
 </script>
@@ -20,7 +20,7 @@ const tab = ref("companies")
       <v-tab value="contacts">Contacts</v-tab>
       <v-tab value="applications">Applications</v-tab>
       <v-tab value="events">Events</v-tab>
-      <v-tab value="calandar">Calandar</v-tab>
+      <v-tab value="calendar">Calendar</v-tab>
       <v-tab value="company_types">Company types</v-tab>
       <v-tab value="event_sources">Event sources</v-tab>
       <v-tab value="application_statuses">Application statuses</v-tab>
@@ -49,9 +49,9 @@ const tab = ref("companies")
           <event></event>
         </Suspense>
       </v-tabs-window-item>
-      <v-tabs-window-item value="calandar">
+      <v-tabs-window-item value="calendar">
         <Suspense>
-          <calandar></calandar>
+          <calendar></calendar>
         </Suspense>
       </v-tabs-window-item>
       <v-tabs-window-item value="company_types">

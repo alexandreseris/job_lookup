@@ -1,11 +1,10 @@
 <script lang="ts" setup generic="T extends { id: number }">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import {
     VAlert,
     VCard,
     VCardItem,
     VCardActions,
-    VSpacer,
     VDataTable,
     VChip,
     VTextField,
@@ -15,7 +14,11 @@ import {
     VBtn,
     VListItem,
     VIcon,
-    VDialog
+    VDialog,
+    VContainer,
+    VCol,
+    VRow,
+    VCheckbox
 
 } from 'vuetify/components'
 import { VNumberInput } from 'vuetify/labs/VNumberInput'
@@ -261,38 +264,119 @@ const CELL_CLASSES = [
     "v-data-table-column--align-start"
 ]
 
+const search = ref("")
+const searchReg = ref(false)
+const invalidRegErrs = ref<string[]>([])
+
+const searchRegIsInvalid = computed(() => {
+    return invalidRegErrs.value.length > 0
+})
+
+function compareString(value: string): boolean {
+    const lowerSearch = search.value.toLowerCase()
+    return value.toLowerCase().includes(lowerSearch)
+}
+
+function compareStringReg(value: string): boolean {
+    try {
+        const regSearch = new RegExp(search.value)
+        invalidRegErrs.value = []
+        return regSearch.test(value)
+    } catch (e) {
+        invalidRegErrs.value = [`invalid regex: ${e}`]
+        return true
+    }
+}
+
+function compareValueToSearch(value: any): boolean {
+    let compMethod = compareString
+    if (searchReg.value) {
+        compMethod = compareStringReg
+    }
+    if (Array.isArray(value)) {
+        for (const e of value) {
+            if (compareValueToSearch(e)) {
+                return true
+            }
+        }
+    } else if (value instanceof Date && compMethod(utils.formatDateToLocale(value))) {
+        return true
+    } else if (value && compMethod(String(value))) {
+        return true
+    }
+    return false
+}
+
+
+const searchFilter = computed(() => {
+    if (search.value) {
+        return props.items.filter(
+            function (e) {
+                for (const key in e) {
+                    let prop = e[key]
+                    let eq = compareValueToSearch(prop)
+                    if (eq) {
+                        return true
+                    }
+                }
+                return false
+            }
+        )
+    }
+    invalidRegErrs.value = []
+    return props.items
+})
+
 </script>
 
 <template>
     <v-alert :text="alertMessage.text" :title="alertMessage.title" :type="alertMessage.type" closable
         v-model="alertMessage.displayed" elevation="24"></v-alert>
 
-    <v-card variant="tonal" color="secondary" :title="props.title" style="text-align: center;">
+    <v-card variant="tonal" color="secondary" :title="props.title">
         <v-card-actions>
-            <v-spacer />
-            <v-tooltip :text="edit ? 'Cancel modifications' : 'Edit'" location="top">
-                <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" color="secondary" variant="flat" :icon="edit ? 'mdi-cancel' : 'mdi-pencil'"
-                        density="comfortable" @click="toogleEdit()"></v-btn>
-                </template>
-            </v-tooltip>
-            <v-tooltip text="Add" location="top">
-                <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" color="secondary" variant="flat" icon="mdi-plus" density="comfortable"
-                        @click="newItem()" v-show="edit"></v-btn>
-                </template>
-            </v-tooltip>
-            <v-tooltip text="Save" location="top">
-                <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" color="secondary" variant="flat" icon="mdi-content-save-all"
-                        density="comfortable" @click="save()" v-show="edit"></v-btn>
-                </template>
-            </v-tooltip>
-            <v-spacer />
+            <v-container>
+                <v-row>
+                    <v-col>
+                        <v-text-field v-model="search" label="Search" density="compact" prepend-icon="mdi-file-search"
+                            :error-messages="invalidRegErrs" :error="searchRegIsInvalid" width="30em"></v-text-field>
+                    </v-col>
+                    <v-col>
+                        <v-checkbox v-model="searchReg" label="Regex"></v-checkbox>
+                    </v-col>
+                    <v-col>
+                        <v-tooltip :text="edit ? 'Cancel modifications' : 'Edit'" location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-btn v-bind="props" color="secondary" variant="flat"
+                                    :icon="edit ? 'mdi-cancel' : 'mdi-pencil'" density="comfortable"
+                                    @click="toogleEdit()"></v-btn>
+                            </template>
+                        </v-tooltip>
+                    </v-col>
+                    <v-col>
+                        <v-tooltip text="Add" location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-btn v-bind="props" color="secondary" variant="flat" icon="mdi-plus"
+                                    density="comfortable" @click="newItem()" v-show="edit"></v-btn>
+                            </template>
+                        </v-tooltip>
+                    </v-col>
+                    <v-col>
+                        <v-tooltip text="Save" location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-btn v-bind="props" color="secondary" variant="flat" icon="mdi-content-save-all"
+                                    density="comfortable" @click="save()" v-show="edit"></v-btn>
+                            </template>
+                        </v-tooltip>
+                    </v-col>
+                </v-row>
+                <v-row no-gutters>
+                </v-row>
+            </v-container>
         </v-card-actions>
     </v-card>
 
-    <v-data-table :headers="edit ? columnsWithDelete : props.columns as types.VuetifyHeaders" :items="props.items"
+    <v-data-table :headers="edit ? columnsWithDelete : props.columns as types.VuetifyHeaders" :items="searchFilter"
         density="compact" height="70vh" items-per-page="-1" :items-per-page-options="[-1]">
 
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">

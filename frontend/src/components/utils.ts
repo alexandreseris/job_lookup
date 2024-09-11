@@ -17,7 +17,7 @@ export function areObjsEq<T>(item1: T, item2: T): boolean {
         if (
             item1PropIsArray && !item2PropIsArray ||
             !item1PropIsArray && item2PropIsArray ||
-            (item1PropIsArray && item2PropIsArray && item1Prop.length != item2Prop.length)) {
+            (item1PropIsArray && item2PropIsArray && item1Prop.length !== item2Prop.length)) {
             return false
         }
         if (item1PropIsArray && item2PropIsArray) {
