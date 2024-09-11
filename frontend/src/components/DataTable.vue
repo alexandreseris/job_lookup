@@ -293,7 +293,7 @@ const CELL_CLASSES = [
     </v-card>
 
     <v-data-table :headers="edit ? columnsWithDelete : props.columns as types.VuetifyHeaders" :items="props.items"
-        density="compact" hide-default-footer>
+        density="compact" height="70vh" items-per-page="-1" :items-per-page-options="[-1]">
 
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
             <tr>
