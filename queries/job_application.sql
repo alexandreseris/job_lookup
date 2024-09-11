@@ -1,6 +1,14 @@
 -- name: ListJobApplicationStatus :many
 SELECT
-    *
+    *,
+    (
+        SELECT
+            count(*)
+        FROM
+            job_application
+        WHERE
+            job_application.status_id = job_application_status.id
+    ) AS applications
 FROM
     job_application_status;
 
@@ -47,7 +55,12 @@ SELECT
     ) AS event_cnt,
     (
         SELECT
-            cast(max(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN max(event.date) IS NULL THEN 0
+                    ELSE max(event.date)
+                END AS integer
+            )
         FROM
             event
         WHERE
@@ -56,7 +69,12 @@ SELECT
     ) AS last_event,
     (
         SELECT
-            cast(min(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN min(event.date) IS NULL THEN 0
+                    ELSE min(event.date)
+                END AS integer
+            )
         FROM
             event
         WHERE

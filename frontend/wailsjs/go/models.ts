@@ -1,45 +1,51 @@
 export namespace db {
 	
-	export class CompanyType {
+	export class ListCompanyTypeRow {
 	    id: number;
 	    name: string;
+	    companies: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new CompanyType(source);
+	        return new ListCompanyTypeRow(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
+	        this.companies = source["companies"];
 	    }
 	}
-	export class EventSource {
+	export class ListEventSourceRow {
 	    id: number;
 	    name: string;
+	    events: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new EventSource(source);
+	        return new ListEventSourceRow(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
+	        this.events = source["events"];
 	    }
 	}
-	export class JobApplicationStatus {
+	export class ListJobApplicationStatusRow {
 	    id: number;
 	    name: string;
+	    applications: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new JobApplicationStatus(source);
+	        return new ListJobApplicationStatusRow(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
+	        this.applications = source["applications"];
 	    }
 	}
 
@@ -54,9 +60,9 @@ export namespace main {
 	    company_types: string[];
 	    application_cnt: number;
 	    // Go type: time
-	    last_event: any;
+	    last_event?: any;
 	    // Go type: time
-	    next_event: any;
+	    next_event?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new Company(source);
@@ -102,9 +108,9 @@ export namespace main {
 	    notes: string;
 	    company_name: string;
 	    // Go type: time
-	    last_event: any;
+	    last_event?: any;
 	    // Go type: time
-	    next_event: any;
+	    next_event?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new Contact(source);
@@ -198,9 +204,9 @@ export namespace main {
 	    company_name: string;
 	    event_cnt: number;
 	    // Go type: time
-	    last_event: any;
+	    last_event?: any;
 	    // Go type: time
-	    next_event: any;
+	    next_event?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new JobApplication(source);

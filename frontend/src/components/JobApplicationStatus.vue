@@ -6,15 +6,17 @@ import * as types from './types'
 import { useStore } from '../store'
 
 
-type Item = db.JobApplicationStatus
+type Item = db.ListJobApplicationStatusRow
 
 const columns: types.Columns<Item> = [
     { title: 'Name', key: 'name', type: "string", requiered: true },
+    { title: 'Jobs', key: 'applications', type: "int", readOnly: true },
 ]
 
 const emptyItem = {
     id: 0,
     name: '',
+    applications: 0
 } as Item
 
 

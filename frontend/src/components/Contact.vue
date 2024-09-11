@@ -30,8 +30,8 @@ const emptyItem = {
     last_name: "",
     notes: "",
     phone_number: "",
-    last_event: new Date(),
-    next_event: new Date(),
+    last_event: null,
+    next_event: null,
 } as Item
 
 const store = useStore()

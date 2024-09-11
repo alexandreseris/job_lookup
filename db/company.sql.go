@@ -181,7 +181,12 @@ SELECT
     ) AS application_cnt,
     (
         SELECT
-            cast(max(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN max(event.date) IS NULL THEN 0
+                    ELSE max(event.date)
+                END AS integer
+            )
         FROM
             event
             INNER JOIN job_application ON job_application.id = event.job_application_id
@@ -191,7 +196,12 @@ SELECT
     ) AS last_event,
     (
         SELECT
-            cast(min(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN min(event.date) IS NULL THEN 0
+                    ELSE min(event.date)
+                END AS integer
+            )
         FROM
             event
             INNER JOIN job_application ON job_application.id = event.job_application_id
@@ -249,21 +259,36 @@ func (q *Queries) ListCompany(ctx context.Context) ([]ListCompanyRow, error) {
 
 const listCompanyType = `-- name: ListCompanyType :many
 SELECT
-    id, name
+    id, name,
+    (
+        SELECT
+            count(*)
+        FROM
+            company
+            INNER JOIN company_type_rel ON company_type_rel.company_id = company.id
+        WHERE
+            company_type_rel.company_type_id = company_type.id
+    ) AS companies
 FROM
     company_type
 `
 
-func (q *Queries) ListCompanyType(ctx context.Context) ([]CompanyType, error) {
+type ListCompanyTypeRow struct {
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	Companies int64  `json:"companies"`
+}
+
+func (q *Queries) ListCompanyType(ctx context.Context) ([]ListCompanyTypeRow, error) {
 	rows, err := q.db.QueryContext(ctx, listCompanyType)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []CompanyType{}
+	items := []ListCompanyTypeRow{}
 	for rows.Next() {
-		var i CompanyType
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		var i ListCompanyTypeRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Companies); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

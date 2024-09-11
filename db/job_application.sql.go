@@ -135,7 +135,12 @@ SELECT
     ) AS event_cnt,
     (
         SELECT
-            cast(max(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN max(event.date) IS NULL THEN 0
+                    ELSE max(event.date)
+                END AS integer
+            )
         FROM
             event
         WHERE
@@ -144,7 +149,12 @@ SELECT
     ) AS last_event,
     (
         SELECT
-            cast(min(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN min(event.date) IS NULL THEN 0
+                    ELSE min(event.date)
+                END AS integer
+            )
         FROM
             event
         WHERE
@@ -206,21 +216,35 @@ func (q *Queries) ListJobApplication(ctx context.Context) ([]ListJobApplicationR
 
 const listJobApplicationStatus = `-- name: ListJobApplicationStatus :many
 SELECT
-    id, name
+    id, name,
+    (
+        SELECT
+            count(*)
+        FROM
+            job_application
+        WHERE
+            job_application.status_id = job_application_status.id
+    ) AS applications
 FROM
     job_application_status
 `
 
-func (q *Queries) ListJobApplicationStatus(ctx context.Context) ([]JobApplicationStatus, error) {
+type ListJobApplicationStatusRow struct {
+	ID           int64  `json:"id"`
+	Name         string `json:"name"`
+	Applications int64  `json:"applications"`
+}
+
+func (q *Queries) ListJobApplicationStatus(ctx context.Context) ([]ListJobApplicationStatusRow, error) {
 	rows, err := q.db.QueryContext(ctx, listJobApplicationStatus)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []JobApplicationStatus{}
+	items := []ListJobApplicationStatusRow{}
 	for rows.Next() {
-		var i JobApplicationStatus
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		var i ListJobApplicationStatusRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Applications); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

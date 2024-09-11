@@ -26,8 +26,8 @@ const emptyItem = {
     status_id: 0,
     status_name: "",
     event_cnt: 0,
-    last_event: new Date(),
-    next_event: new Date(),
+    last_event: null,
+    next_event: null,
 } as Item
 
 const store = useStore()

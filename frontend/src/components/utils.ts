@@ -54,20 +54,39 @@ export function parseBackendDate(date: string | Date): Date {
     return momentTz.parseZone(date, dateBackendFormat, true).toDate()
 }
 
-export function parseInputDate(dateStr: string): Date {
+export function parseBackendDateOpt(date: string | Date): Date | null {
+    if (!date) {
+        return null
+    }
+    return parseBackendDate(date)
+}
+
+export function parseInputDate(dateStr: string): Date | null {
+    if (!dateStr) {
+        return null
+    }
     return momentTz.parseZone(dateStr, dateInputFormat, true).tz(tz, true).toDate()
 }
 
-export function formatDateForBackend(date: Date): string {
+export function formatDateForBackend(date: Date | null): string | null {
+    if (!date) {
+        return null
+    }
     return momentTz(date).format(dateBackendFormat)
 }
 
 
-export function formatDateToInput(date: Date): string {
+export function formatDateToInput(date: Date | null): string {
+    if (!date) {
+        return ""
+    }
     return momentTz(date).format(dateInputFormat)
 }
 
-export function formatDateToLocale(date: Date): string {
+export function formatDateToLocale(date: Date | null): string {
+    if (!date) {
+        return ""
+    }
     return momentTz(date).toDate().toLocaleDateString()
 }
 

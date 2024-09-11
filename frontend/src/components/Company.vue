@@ -22,8 +22,8 @@ const emptyItem = {
     notes: '',
     company_types: [],
     application_cnt: 0,
-    last_event: new Date(),
-    next_event: new Date(),
+    last_event: null,
+    next_event: null,
     convertValues(a: any, classs: any, asMap: boolean = false): any { },
 } as Item
 

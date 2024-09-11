@@ -9,7 +9,7 @@ const props = defineProps<{
     width: string
 }>()
 
-const model = defineModel<Date, string>({ required: true })
+const model = defineModel<Date | null, string>({ required: true })
 // dbl dbl binding :O
 const dateStr = computed<string>({
     get() {

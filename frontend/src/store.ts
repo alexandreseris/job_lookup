@@ -9,12 +9,12 @@ export const useStore = defineStore('store', () => {
     let isInit = false
 
     const companies = ref<main.Company[]>([])
-    const companyTypes = ref<db.CompanyType[]>([])
+    const companyTypes = ref<db.ListCompanyTypeRow[]>([])
     const events = ref<main.Event[]>([])
     const contacts = ref<main.Contact[]>([])
-    const eventSource = ref<db.EventSource[]>([])
+    const eventSource = ref<db.ListEventSourceRow[]>([])
     const applications = ref<main.JobApplication[]>([])
-    const applicationStatus = ref<db.JobApplicationStatus[]>([])
+    const applicationStatus = ref<db.ListJobApplicationStatusRow[]>([])
 
     async function loadData(callback: () => Promise<void>, errMessage: string) {
         try {
@@ -31,7 +31,12 @@ export const useStore = defineStore('store', () => {
 
     async function loadCompanies() {
         await loadData(async () => {
-            companies.value = await back.ListCompanies()
+            let companiesConv = await back.ListCompanies()
+            for (const e of companiesConv) {
+                e.last_event = utils.parseBackendDateOpt(e.last_event)
+                e.next_event = utils.parseBackendDateOpt(e.next_event)
+            }
+            companies.value = companiesConv
         }, "failled to load companies")
     }
     async function loadCompanyTypes() {
@@ -50,7 +55,12 @@ export const useStore = defineStore('store', () => {
     }
     async function loadContact() {
         await loadData(async () => {
-            contacts.value = await back.ListContact()
+            let contactConv = await back.ListContact()
+            for (const e of contactConv) {
+                e.last_event = utils.parseBackendDateOpt(e.last_event)
+                e.next_event = utils.parseBackendDateOpt(e.next_event)
+            }
+            contacts.value = contactConv
         }, "failled to load contacts")
     }
     async function loadEventSource() {
@@ -60,7 +70,12 @@ export const useStore = defineStore('store', () => {
     }
     async function loadJobApplication() {
         await loadData(async () => {
-            applications.value = await back.ListJobApplication()
+            let applicationConv = await back.ListJobApplication()
+            for (const e of applicationConv) {
+                e.last_event = utils.parseBackendDateOpt(e.last_event)
+                e.next_event = utils.parseBackendDateOpt(e.next_event)
+            }
+            applications.value = applicationConv
         }, "failled to load job applications")
     }
     async function loadJobApplicationStatus() {

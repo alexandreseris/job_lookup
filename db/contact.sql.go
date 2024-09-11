@@ -103,7 +103,12 @@ SELECT
     company.name AS company_name,
     (
         SELECT
-            cast(max(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN max(event.date) IS NULL THEN 0
+                    ELSE max(event.date)
+                END AS integer
+            )
         FROM
             event
             INNER JOIN event_contacts ON event_contacts.event_id = event.id
@@ -113,7 +118,12 @@ SELECT
     ) AS last_event,
     (
         SELECT
-            cast(min(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN min(event.date) IS NULL THEN 0
+                    ELSE min(event.date)
+                END AS integer
+            )
         FROM
             event
             INNER JOIN event_contacts ON event_contacts.event_id = event.id

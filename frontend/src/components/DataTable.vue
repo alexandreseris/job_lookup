@@ -97,7 +97,9 @@ function formatDateBeforeSend(item: T): T {
     let cp: T = Object.assign({}, item)
     for (const col of props.columns) {
         if (col.type === "date") {
-            cp[col.key] = utils.formatDateForBackend(item[col.key] as Date) as T[keyof T]
+            if (item[col.key]) {
+                cp[col.key] = utils.formatDateForBackend(item[col.key] as Date) as T[keyof T]
+            }
         }
     }
     return cp
@@ -214,7 +216,7 @@ const ACTION_WIDTH = "5em";
 const DATE_WIDTH = "12em";
 const STRING_WIDTH = "12em";
 const MULTILINE_WIDTH = "30em";
-const INT_WIDTH = "5em";
+const INT_WIDTH = "9em";
 const REL_WIDTH = "10em";
 const LISTREL_WIDTH = "15em";
 

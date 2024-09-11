@@ -50,40 +50,59 @@ func groupByMap[R interface{}, G interface{}, K comparable](
 	return grouped
 }
 
-func (a *App) ListCompanyTypes() ([]db.CompanyType, error) {
-	return a.queries.ListCompanyType(a.dbctx)
+func wrapError(err error, operation string) error {
+	if err == nil {
+		return nil
+	}
+	newErr := fmt.Errorf("%s: %w", operation, err)
+	fmt.Printf("ERROR: %v\n", newErr)
+	return newErr
 }
 
-func (a *App) DeleteCompanyType(item db.CompanyType) error {
-	return a.queries.DeleteCompanyType(a.dbctx, item.Name)
+func (a *App) ListCompanyTypes() ([]db.ListCompanyTypeRow, error) {
+	data, err := a.queries.ListCompanyType(a.dbctx)
+	return data, wrapError(err, "ListCompanyTypes")
 }
 
-func (a *App) UpdateCompanyType(item db.CompanyType) error {
-	return a.queries.UpdateCompanyType(a.dbctx, db.UpdateCompanyTypeParams{
+func (a *App) DeleteCompanyType(item db.ListCompanyTypeRow) error {
+	return wrapError(a.queries.DeleteCompanyType(a.dbctx, item.Name), "DeleteCompanyType")
+}
+
+func (a *App) UpdateCompanyType(item db.ListCompanyTypeRow) error {
+	return wrapError(a.queries.UpdateCompanyType(a.dbctx, db.UpdateCompanyTypeParams{
 		ID:   item.ID,
 		Name: item.Name,
-	})
+	}), "UpdateCompanyType")
 }
 
-func (a *App) InsertCompanyType(item db.CompanyType) (db.CompanyType, error) {
+func (a *App) InsertCompanyType(item db.ListCompanyTypeRow) (db.ListCompanyTypeRow, error) {
 	c, err := a.queries.InsertCompanyType(a.dbctx, item.Name)
-	return c, err
+	item.ID = c.ID
+	return item, wrapError(err, "InsertCompanyType")
+}
+
+func timpestampToDate(timestamp int64) *time.Time {
+	if timestamp == 0 {
+		return nil
+	}
+	date := time.Unix(timestamp, 0)
+	return &date
 }
 
 type Company struct {
-	ID             int64     `json:"id"`
-	Name           string    `json:"name"`
-	Notes          string    `json:"notes"`
-	CompanyTypes   []string  `json:"company_types"`
-	ApplicationCnt int64     `json:"application_cnt"`
-	LastEvent      time.Time `json:"last_event"`
-	NextEvent      time.Time `json:"next_event"`
+	ID             int64      `json:"id"`
+	Name           string     `json:"name"`
+	Notes          string     `json:"notes"`
+	CompanyTypes   []string   `json:"company_types"`
+	ApplicationCnt int64      `json:"application_cnt"`
+	LastEvent      *time.Time `json:"last_event"`
+	NextEvent      *time.Time `json:"next_event"`
 }
 
 func (a *App) ListCompanies() ([]Company, error) {
 	c, err := a.queries.ListCompany(a.dbctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapError(err, "ListCompanies")
 	}
 	return groupByMap(
 		c,
@@ -93,8 +112,8 @@ func (a *App) ListCompanies() ([]Company, error) {
 			g.Name = r[0].Name
 			g.Notes = r[0].Notes
 			g.ApplicationCnt = r[0].ApplicationCnt
-			g.LastEvent = time.Unix(r[0].LastEvent, 0)
-			g.NextEvent = time.Unix(r[0].NextEvent, 0)
+			g.LastEvent = timpestampToDate(r[0].LastEvent)
+			g.NextEvent = timpestampToDate(r[0].NextEvent)
 			for _, sub := range r {
 				g.CompanyTypes = append(g.CompanyTypes, sub.CompanyType.Name)
 			}
@@ -103,7 +122,7 @@ func (a *App) ListCompanies() ([]Company, error) {
 }
 
 func (a *App) DeleteCompany(item Company) error {
-	return a.queries.DeleteCompany(a.dbctx, item.Name)
+	return wrapError(a.queries.DeleteCompany(a.dbctx, item.Name), "DeleteCompany")
 }
 
 func setCompanyType(a *App, companyId int64, companyTypes []string) error {
@@ -134,9 +153,9 @@ func (a *App) UpdateCompany(item Company) error {
 		Notes: item.Notes,
 	})
 	if err != nil {
-		return nil
+		return wrapError(err, "UpdateCompany")
 	}
-	return setCompanyType(a, item.ID, item.CompanyTypes)
+	return wrapError(setCompanyType(a, item.ID, item.CompanyTypes), "UpdateCompany/setCompanyType")
 }
 
 func (a *App) InsertCompany(item Company) (Company, error) {
@@ -145,66 +164,72 @@ func (a *App) InsertCompany(item Company) (Company, error) {
 		Notes: item.Notes,
 	})
 	if err != nil {
-		return Company{}, err
+		return Company{}, wrapError(err, "InsertCompany")
 	}
 	err = setCompanyType(a, c.ID, item.CompanyTypes)
 	if err != nil {
-		return Company{}, err
+		return Company{}, wrapError(err, "InsertCompany/setCompanyType")
 	}
 	item.ID = c.ID
 	return item, nil
 }
 
-func (a *App) ListJobApplicationStatus() ([]db.JobApplicationStatus, error) {
-	return a.queries.ListJobApplicationStatus(a.dbctx)
+func (a *App) ListJobApplicationStatus() ([]db.ListJobApplicationStatusRow, error) {
+	data, err := a.queries.ListJobApplicationStatus(a.dbctx)
+	return data, wrapError(err, "ListJobApplicationStatus")
 }
-func (a *App) InsertJobApplicationStatus(item db.JobApplicationStatus) (db.JobApplicationStatus, error) {
-	return a.queries.InsertJobApplicationStatus(a.dbctx, item.Name)
+func (a *App) InsertJobApplicationStatus(item db.ListJobApplicationStatusRow) (db.ListJobApplicationStatusRow, error) {
+	data, err := a.queries.InsertJobApplicationStatus(a.dbctx, item.Name)
+	item.ID = data.ID
+	return item, wrapError(err, "InsertJobApplicationStatus")
 }
-func (a *App) DeleteJobApplicationStatus(item db.JobApplicationStatus) error {
-	return a.queries.DeleteJobApplicationStatus(a.dbctx, item.Name)
+func (a *App) DeleteJobApplicationStatus(item db.ListJobApplicationStatusRow) error {
+	return wrapError(a.queries.DeleteJobApplicationStatus(a.dbctx, item.Name), "DeleteJobApplicationStatus")
 }
-func (a *App) UpdateJobApplicationStatus(item db.JobApplicationStatus) error {
-	return a.queries.UpdateJobApplicationStatus(a.dbctx, db.UpdateJobApplicationStatusParams{
+func (a *App) UpdateJobApplicationStatus(item db.ListJobApplicationStatusRow) error {
+	return wrapError(a.queries.UpdateJobApplicationStatus(a.dbctx, db.UpdateJobApplicationStatusParams{
 		Name: item.Name,
 		ID:   item.ID,
-	})
+	}), "UpdateJobApplicationStatus")
 }
 
-func (a *App) ListEventSource() ([]db.EventSource, error) {
-	return a.queries.ListEventSource(a.dbctx)
+func (a *App) ListEventSource() ([]db.ListEventSourceRow, error) {
+	data, err := a.queries.ListEventSource(a.dbctx)
+	return data, wrapError(err, "ListEventSource")
 }
-func (a *App) InsertEventSource(item db.EventSource) (db.EventSource, error) {
-	return a.queries.InsertEventSource(a.dbctx, item.Name)
+func (a *App) InsertEventSource(item db.ListEventSourceRow) (db.ListEventSourceRow, error) {
+	data, err := a.queries.InsertEventSource(a.dbctx, item.Name)
+	item.ID = data.ID
+	return item, wrapError(err, "InsertEventSource")
 }
-func (a *App) DeleteEventSource(item db.EventSource) error {
-	return a.queries.DeleteEventSource(a.dbctx, item.Name)
+func (a *App) DeleteEventSource(item db.ListEventSourceRow) error {
+	return wrapError(a.queries.DeleteEventSource(a.dbctx, item.Name), "DeleteEventSource")
 }
-func (a *App) UpdateEventSource(item db.EventSource) error {
-	return a.queries.UpdateEventSource(a.dbctx, db.UpdateEventSourceParams{
+func (a *App) UpdateEventSource(item db.ListEventSourceRow) error {
+	return wrapError(a.queries.UpdateEventSource(a.dbctx, db.UpdateEventSourceParams{
 		Name: item.Name,
 		ID:   item.ID,
-	})
+	}), "UpdateEventSource")
 }
 
 type Contact struct {
-	ID          int64     `json:"id"`
-	CompanyID   int64     `json:"company_id"`
-	JobPosition string    `json:"job_position"`
-	FistName    string    `json:"fist_name"`
-	LastName    string    `json:"last_name"`
-	Email       string    `json:"email"`
-	PhoneNumber string    `json:"phone_number"`
-	Notes       string    `json:"notes"`
-	CompanyName string    `json:"company_name"`
-	LastEvent   time.Time `json:"last_event"`
-	NextEvent   time.Time `json:"next_event"`
+	ID          int64      `json:"id"`
+	CompanyID   int64      `json:"company_id"`
+	JobPosition string     `json:"job_position"`
+	FistName    string     `json:"fist_name"`
+	LastName    string     `json:"last_name"`
+	Email       string     `json:"email"`
+	PhoneNumber string     `json:"phone_number"`
+	Notes       string     `json:"notes"`
+	CompanyName string     `json:"company_name"`
+	LastEvent   *time.Time `json:"last_event"`
+	NextEvent   *time.Time `json:"next_event"`
 }
 
 func (a *App) ListContact() ([]Contact, error) {
 	res, err := a.queries.ListContact(a.dbctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapError(err, "ListContact")
 	}
 	contacts := make([]Contact, len(res))
 	for i := range res {
@@ -219,16 +244,16 @@ func (a *App) ListContact() ([]Contact, error) {
 			PhoneNumber: dbContact.PhoneNumber,
 			Notes:       dbContact.Notes,
 			CompanyName: dbContact.CompanyName,
-			LastEvent:   time.Unix(dbContact.LastEvent, 0),
-			NextEvent:   time.Unix(dbContact.NextEvent, 0),
+			LastEvent:   timpestampToDate(dbContact.LastEvent),
+			NextEvent:   timpestampToDate(dbContact.NextEvent),
 		}
 	}
-	return contacts, err
+	return contacts, nil
 }
 func (a *App) InsertContact(item Contact) (Contact, error) {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
-		return Contact{}, err
+		return Contact{}, wrapError(err, "InsertContact/GetCompanyIdByName")
 	}
 	newitem, err := a.queries.InsertContact(a.dbctx, db.InsertContactParams{
 		CompanyID:   c,
@@ -240,20 +265,20 @@ func (a *App) InsertContact(item Contact) (Contact, error) {
 		Notes:       item.Notes,
 	})
 	if err != nil {
-		return Contact{}, err
+		return Contact{}, wrapError(err, "InsertContact")
 	}
 	item.ID = newitem.ID
 	return item, nil
 }
 func (a *App) DeleteContact(item Contact) error {
-	return a.queries.DeleteContact(a.dbctx, item.ID)
+	return wrapError(a.queries.DeleteContact(a.dbctx, item.ID), "DeleteContact")
 }
 func (a *App) UpdateContact(item Contact) error {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
-		return err
+		return wrapError(err, "UpdateContact/GetCompanyIdByName")
 	}
-	return a.queries.UpdateContact(a.dbctx, db.UpdateContactParams{
+	return wrapError(a.queries.UpdateContact(a.dbctx, db.UpdateContactParams{
 		CompanyID:   c,
 		JobPosition: item.JobPosition,
 		FistName:    item.FistName,
@@ -262,26 +287,26 @@ func (a *App) UpdateContact(item Contact) error {
 		PhoneNumber: item.PhoneNumber,
 		Notes:       item.Notes,
 		ID:          item.ID,
-	})
+	}), "UpdateContact")
 }
 
 type JobApplication struct {
-	ID          int64     `json:"id"`
-	CompanyID   int64     `json:"company_id"`
-	StatusID    int64     `json:"status_id"`
-	JobTitle    string    `json:"job_title"`
-	Notes       string    `json:"notes"`
-	StatusName  string    `json:"status_name"`
-	CompanyName string    `json:"company_name"`
-	EventCnt    int64     `json:"event_cnt"`
-	LastEvent   time.Time `json:"last_event"`
-	NextEvent   time.Time `json:"next_event"`
+	ID          int64      `json:"id"`
+	CompanyID   int64      `json:"company_id"`
+	StatusID    int64      `json:"status_id"`
+	JobTitle    string     `json:"job_title"`
+	Notes       string     `json:"notes"`
+	StatusName  string     `json:"status_name"`
+	CompanyName string     `json:"company_name"`
+	EventCnt    int64      `json:"event_cnt"`
+	LastEvent   *time.Time `json:"last_event"`
+	NextEvent   *time.Time `json:"next_event"`
 }
 
 func (a *App) ListJobApplication() ([]JobApplication, error) {
 	res, err := a.queries.ListJobApplication(a.dbctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapError(err, "ListJobApplication")
 	}
 	applications := make([]JobApplication, len(res))
 	for i := range res {
@@ -295,20 +320,20 @@ func (a *App) ListJobApplication() ([]JobApplication, error) {
 			StatusName:  dbApp.StatusName,
 			CompanyName: dbApp.CompanyName,
 			EventCnt:    dbApp.EventCnt,
-			LastEvent:   time.Unix(dbApp.LastEvent, 0),
-			NextEvent:   time.Unix(dbApp.NextEvent, 0),
+			LastEvent:   timpestampToDate(dbApp.LastEvent),
+			NextEvent:   timpestampToDate(dbApp.NextEvent),
 		}
 	}
-	return applications, err
+	return applications, nil
 }
 func (a *App) InsertJobApplication(item JobApplication) (JobApplication, error) {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
-		return JobApplication{}, err
+		return JobApplication{}, wrapError(err, "InsertJobApplication/GetCompanyIdByName")
 	}
 	s, err := a.queries.GetJobApplicationStatusIdByName(a.dbctx, item.StatusName)
 	if err != nil {
-		return JobApplication{}, err
+		return JobApplication{}, wrapError(err, "InsertJobApplication/GetJobApplicationStatusIdByName")
 	}
 	newitem, err := a.queries.InsertJobApplication(a.dbctx, db.InsertJobApplicationParams{
 		CompanyID: c,
@@ -317,30 +342,30 @@ func (a *App) InsertJobApplication(item JobApplication) (JobApplication, error) 
 		Notes:     item.Notes,
 	})
 	if err != nil {
-		return JobApplication{}, err
+		return JobApplication{}, wrapError(err, "InsertJobApplication")
 	}
 	item.ID = newitem.ID
 	return item, nil
 }
 func (a *App) DeleteJobApplication(item JobApplication) error {
-	return a.queries.DeleteJobApplication(a.dbctx, item.ID)
+	return wrapError(a.queries.DeleteJobApplication(a.dbctx, item.ID), "DeleteJobApplication")
 }
 func (a *App) UpdateJobApplication(item JobApplication) error {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
-		return err
+		return wrapError(err, "UpdateJobApplication/GetCompanyIdByName")
 	}
 	s, err := a.queries.GetJobApplicationStatusIdByName(a.dbctx, item.StatusName)
 	if err != nil {
-		return err
+		return wrapError(err, "UpdateJobApplication/GetJobApplicationStatusIdByName")
 	}
-	return a.queries.UpdateJobApplication(a.dbctx, db.UpdateJobApplicationParams{
+	return wrapError(a.queries.UpdateJobApplication(a.dbctx, db.UpdateJobApplicationParams{
 		CompanyID: c,
 		StatusID:  s,
 		JobTitle:  item.JobTitle,
 		Notes:     item.Notes,
 		ID:        item.ID,
-	})
+	}), "UpdateJobApplication")
 }
 
 type Event struct {
@@ -366,7 +391,7 @@ func splitContactNames(contactNamesJoined string) (firstName string, lastName st
 func (a *App) ListEvents() ([]Event, error) {
 	e, err := a.queries.ListEvent(a.dbctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapError(err, "ListEvents")
 	}
 	return groupByMap(
 		e,
@@ -415,14 +440,14 @@ func setEventContacts(a *App, event Event) error {
 func (a *App) InsertEvent(item Event) (Event, error) {
 	s, err := a.queries.GetEventSourceIdByName(a.dbctx, item.Source)
 	if err != nil {
-		return Event{}, err
+		return Event{}, wrapError(err, "InsertEvent/GetEventSourceIdByName")
 	}
 	ja, err := a.queries.GetJobApplicationIdByName(a.dbctx, db.GetJobApplicationIdByNameParams{
 		JobTitle: item.JobTitle,
 		Name:     item.CompanyName,
 	})
 	if err != nil {
-		return Event{}, err
+		return Event{}, wrapError(err, "InsertEvent/GetJobApplicationIdByName")
 	}
 	newitem, err := a.queries.InsertEvent(a.dbctx, db.InsertEventParams{
 		SourceID:         s,
@@ -432,29 +457,29 @@ func (a *App) InsertEvent(item Event) (Event, error) {
 		Notes:            item.Notes,
 	})
 	if err != nil {
-		return Event{}, nil
+		return Event{}, wrapError(err, "InsertEvent")
 	}
 	item.ID = newitem.ID
 	err = setEventContacts(a, item)
 	if err != nil {
-		return Event{}, err
+		return Event{}, wrapError(err, "InsertEvent/setEventContacts")
 	}
 	return item, nil
 }
 func (a *App) DeleteEvent(item Event) error {
-	return a.queries.DeleteEvent(a.dbctx, item.ID)
+	return wrapError(a.queries.DeleteEvent(a.dbctx, item.ID), "DeleteEvent")
 }
 func (a *App) UpdateEvent(item Event) error {
 	s, err := a.queries.GetEventSourceIdByName(a.dbctx, item.Source)
 	if err != nil {
-		return err
+		return wrapError(err, "UpdateEvent/GetEventSourceIdByName")
 	}
 	ja, err := a.queries.GetJobApplicationIdByName(a.dbctx, db.GetJobApplicationIdByNameParams{
 		JobTitle: item.JobTitle,
 		Name:     item.CompanyName,
 	})
 	if err != nil {
-		return err
+		return wrapError(err, "UpdateEvent/GetJobApplicationIdByName")
 	}
 	err = a.queries.UpdateEvent(a.dbctx, db.UpdateEventParams{
 		SourceID:         s,
@@ -465,7 +490,7 @@ func (a *App) UpdateEvent(item Event) error {
 		ID:               item.ID,
 	})
 	if err != nil {
-		return err
+		return wrapError(err, "UpdateEvent")
 	}
 	return setEventContacts(a, item)
 }

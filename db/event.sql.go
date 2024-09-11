@@ -149,6 +149,7 @@ FROM
     INNER JOIN company ON company.id = job_application.company_id
     LEFT JOIN event_contacts ON event_contacts.event_id = event.id
     LEFT JOIN contact ON contact.id = event_contacts.contact_id
+    AND contact.company_id = company.id
 `
 
 type ListEventRow struct {
@@ -207,21 +208,35 @@ func (q *Queries) ListEvent(ctx context.Context) ([]ListEventRow, error) {
 
 const listEventSource = `-- name: ListEventSource :many
 SELECT
-    id, name
+    id, name,
+    (
+        SELECT
+            count(*)
+        FROM
+            event
+        WHERE
+            event.source_id = event_source.id
+    ) AS EVENTS
 FROM
     event_source
 `
 
-func (q *Queries) ListEventSource(ctx context.Context) ([]EventSource, error) {
+type ListEventSourceRow struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	Events int64  `json:"events"`
+}
+
+func (q *Queries) ListEventSource(ctx context.Context) ([]ListEventSourceRow, error) {
 	rows, err := q.db.QueryContext(ctx, listEventSource)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []EventSource{}
+	items := []ListEventSourceRow{}
 	for rows.Next() {
-		var i EventSource
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		var i ListEventSourceRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Events); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

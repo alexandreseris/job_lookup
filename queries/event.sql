@@ -1,6 +1,14 @@
 -- name: ListEventSource :many
 SELECT
-    *
+    *,
+    (
+        SELECT
+            count(*)
+        FROM
+            event
+        WHERE
+            event.source_id = event_source.id
+    ) AS EVENTS
 FROM
     event_source;
 
@@ -57,7 +65,8 @@ FROM
     INNER JOIN job_application ON job_application.id = event.job_application_id
     INNER JOIN company ON company.id = job_application.company_id
     LEFT JOIN event_contacts ON event_contacts.event_id = event.id
-    LEFT JOIN contact ON contact.id = event_contacts.contact_id;
+    LEFT JOIN contact ON contact.id = event_contacts.contact_id
+    AND contact.company_id = company.id;
 
 -- name: DeleteEvent :exec
 DELETE FROM

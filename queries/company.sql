@@ -35,7 +35,12 @@ SELECT
     ) AS application_cnt,
     (
         SELECT
-            cast(max(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN max(event.date) IS NULL THEN 0
+                    ELSE max(event.date)
+                END AS integer
+            )
         FROM
             event
             INNER JOIN job_application ON job_application.id = event.job_application_id
@@ -45,7 +50,12 @@ SELECT
     ) AS last_event,
     (
         SELECT
-            cast(min(event.date) AS integer)
+            cast(
+                CASE
+                    WHEN min(event.date) IS NULL THEN 0
+                    ELSE min(event.date)
+                END AS integer
+            )
         FROM
             event
             INNER JOIN job_application ON job_application.id = event.job_application_id
@@ -91,7 +101,16 @@ LIMIT
 
 -- name: ListCompanyType :many
 SELECT
-    *
+    *,
+    (
+        SELECT
+            count(*)
+        FROM
+            company
+            INNER JOIN company_type_rel ON company_type_rel.company_id = company.id
+        WHERE
+            company_type_rel.company_type_id = company_type.id
+    ) AS companies
 FROM
     company_type;
 
