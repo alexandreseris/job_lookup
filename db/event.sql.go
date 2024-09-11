@@ -141,7 +141,8 @@ SELECT
     event_source.name AS source,
     company.name AS company_name,
     job_application.job_title AS job_title,
-    contact.id, contact.company_id, contact.job_position, contact.fist_name, contact.last_name, contact.email, contact.phone_number, contact.notes
+    contact.fist_name AS contact_fist_name,
+    contact.last_name AS contact_last_name
 FROM
     event
     INNER JOIN event_source ON event_source.id = event.source_id
@@ -162,7 +163,8 @@ type ListEventRow struct {
 	Source           string  `json:"source"`
 	CompanyName      string  `json:"company_name"`
 	JobTitle         string  `json:"job_title"`
-	Contact          Contact `json:"contact"`
+	ContactFistName  *string `json:"contact_fist_name"`
+	ContactLastName  *string `json:"contact_last_name"`
 }
 
 func (q *Queries) ListEvent(ctx context.Context) ([]ListEventRow, error) {
@@ -184,14 +186,8 @@ func (q *Queries) ListEvent(ctx context.Context) ([]ListEventRow, error) {
 			&i.Source,
 			&i.CompanyName,
 			&i.JobTitle,
-			&i.Contact.ID,
-			&i.Contact.CompanyID,
-			&i.Contact.JobPosition,
-			&i.Contact.FistName,
-			&i.Contact.LastName,
-			&i.Contact.Email,
-			&i.Contact.PhoneNumber,
-			&i.Contact.Notes,
+			&i.ContactFistName,
+			&i.ContactLastName,
 		); err != nil {
 			return nil, err
 		}

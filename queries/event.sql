@@ -58,7 +58,8 @@ SELECT
     event_source.name AS source,
     company.name AS company_name,
     job_application.job_title AS job_title,
-    sqlc.embed(contact)
+    contact.fist_name AS contact_fist_name,
+    contact.last_name AS contact_last_name
 FROM
     event
     INNER JOIN event_source ON event_source.id = event.source_id

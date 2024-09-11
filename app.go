@@ -403,8 +403,12 @@ type Event struct {
 	Contacts    []string  `json:"contacts"`
 }
 
-func joinContactNames(contact db.Contact) string {
-	return fmt.Sprintf("%s, %s", contact.FistName, contact.LastName)
+func joinContactNames(fistName *string, lastName *string) *string {
+	if fistName == nil || lastName == nil {
+		return nil
+	}
+	fmtName := fmt.Sprintf("%s, %s", *fistName, *lastName)
+	return &fmtName
 }
 
 func splitContactNames(contactNamesJoined string) (firstName string, lastName string) {
@@ -429,7 +433,10 @@ func (a *App) ListEvents() ([]Event, error) {
 			g.JobTitle = r[0].JobTitle
 			g.CompanyName = r[0].CompanyName
 			for _, s := range r {
-				g.Contacts = append(g.Contacts, joinContactNames(s.Contact))
+				fmtName := joinContactNames(s.ContactFistName, s.ContactLastName)
+				if fmtName != nil {
+					g.Contacts = append(g.Contacts, *fmtName)
+				}
 			}
 		},
 	), nil
