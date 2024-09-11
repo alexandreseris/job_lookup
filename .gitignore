@@ -3,3 +3,4 @@ node_modules
 frontend/dist
 data.db
 notes.md
+bulk.py
