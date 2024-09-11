@@ -16,7 +16,7 @@ A simple app to manage your job search notes
 
 - Some elements have a black background for no reason (seems to be a bug in vuetify)
 
-## Versions
+## Binaries used and versions
 
 - go version 1.21
 - gcc 13.2.0
