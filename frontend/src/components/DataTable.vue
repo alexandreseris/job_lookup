@@ -216,9 +216,13 @@ function formatCol(col: types.Column<T>, value: any): string {
     throw new Error(`unknown type ${typeof value} for column ${String(col.key)}, value is ${value}`)
 }
 
+const DATE_WIDTH_NUMBER = 12;
+const TIME_WIDTH_NUMBER = 8;
 
-const ACTION_WIDTH = "5em";
-const DATE_WIDTH = "12em";
+const ACTION_WIDTH = "4em";
+const DATE_WIDTH = `${DATE_WIDTH_NUMBER}em`;
+const TIME_WIDTH = `${TIME_WIDTH_NUMBER}em`;
+const DATETIME_WIDTH = "12em";
 const STRING_WIDTH = "12em";
 const MULTILINE_WIDTH = "30em";
 const INT_WIDTH = "9em";
@@ -229,7 +233,7 @@ function getCellStyle(column: types.Column<T>) {
     let width = ""
     switch (column.type) {
         case 'date':
-            width = DATE_WIDTH
+            width = DATETIME_WIDTH
             break
         case 'string':
             width = STRING_WIDTH
@@ -452,7 +456,8 @@ const searchFilter = computed(() => {
                     <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key]" :rules="buildRules(c)"
                         ref="inputs" density="compact" :width="INT_WIDTH" :disabled="c.readOnly"></v-number-input>
                     <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
-                        :width="DATE_WIDTH" ref="inputs" :disabled="c.readOnly"></date-input>
+                        :date-width="DATE_WIDTH" :time-width="TIME_WIDTH" ref="inputs"
+                        :disabled="c.readOnly"></date-input>
                     <v-select v-else-if="c.type === 'listrel' && props.listRelations" v-model="item[c.key] as string[]"
                         :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
                         ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH"

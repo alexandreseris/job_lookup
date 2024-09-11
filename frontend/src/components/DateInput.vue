@@ -1,28 +1,40 @@
 <script lang="ts" setup>
 import { VTextField } from 'vuetify/components'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import * as utils from './utils'
 
 
 const props = defineProps<{
     rules: ((val: any) => string | boolean)[],
-    width: string
+    dateWidth: string,
+    timeWidth: string,
+    disabled: boolean | undefined
 }>()
 
-const model = defineModel<Date | null, string>({ required: true })
+const dateModel = defineModel<Date | null, string>({ required: true })
+const timeStr = ref(utils.formatDateToInput(dateModel.value).time)
 // dbl dbl binding :O
 const dateStr = computed<string>({
     get() {
-        return utils.formatDateToInput(model.value)
+        return utils.formatDateToInput(dateModel.value).date
     },
     set(value) {
-        model.value = utils.parseInputDate(value)
+        dateModel.value = utils.parseInputDate(value, timeStr.value)
     }
 
+})
+
+watch(timeStr, function (value: string) {
+    dateModel.value = utils.parseInputDate(dateStr.value, value)
 })
 
 </script>
 
 <template>
-    <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact" :width="width"></v-text-field>
+    <div style="display: flex; flex-direction: row;">
+        <v-text-field type="date" v-model="dateStr" :rules="props.rules" density="compact" :width="dateWidth"
+            :disabled="disabled"> </v-text-field>
+        <v-text-field type="time" v-model="timeStr" :rules="props.rules" density="compact" :width="timeWidth"
+            :disabled="disabled"></v-text-field>
+    </div>
 </template>

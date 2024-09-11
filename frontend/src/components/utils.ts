@@ -44,6 +44,9 @@ export function areObjsEq<T>(item1: T, item2: T): boolean {
 
 const dateBackendFormat = "yyyy-MM-DDTHH:mm:ssZ"
 const dateInputFormat = "yyyy-MM-DD"
+const timeInputFormat = "HH:mm"
+const dateLocaleFormat = "yyyy-MM-DD HH:mm"  // I LIED ITS NOT LOCAL AT ALL AHAHAHAHHAH
+const timeLocaleFormat = "HH:mm"  // cf above
 const tz = momentTz.tz.guess()
 
 
@@ -61,11 +64,11 @@ export function parseBackendDateOpt(date: string | Date): Date | null {
     return parseBackendDate(date)
 }
 
-export function parseInputDate(dateStr: string): Date | null {
+export function parseInputDate(dateStr: string, timeStr: string): Date | null {
     if (!dateStr) {
         return null
     }
-    return momentTz.parseZone(dateStr, dateInputFormat, true).tz(tz, true).toDate()
+    return momentTz.parseZone(dateStr + timeStr, dateInputFormat + timeInputFormat, true).tz(tz).toDate()
 }
 
 export function formatDateForBackend(date: Date | null): string | null {
@@ -75,20 +78,34 @@ export function formatDateForBackend(date: Date | null): string | null {
     return momentTz(date).format(dateBackendFormat)
 }
 
+type DateTimeStrucct = {
+    date: string, time: string
+}
 
-export function formatDateToInput(date: Date | null): string {
+export function formatDateToInput(date: Date | null): DateTimeStrucct {
     if (!date) {
-        return ""
+        return { date: "", time: "" }
     }
-    return momentTz(date).format(dateInputFormat)
+    return {
+        date: momentTz(date).format(dateInputFormat),
+        time: momentTz(date).format(timeInputFormat)
+    }
 }
 
 export function formatDateToLocale(date: Date | null): string {
     if (!date) {
         return ""
     }
-    return momentTz(date).toDate().toLocaleDateString()
+    return momentTz(date).format(dateLocaleFormat)
 }
+
+export function formatTimeToLocale(date: Date | null): string {
+    if (!date) {
+        return ""
+    }
+    return momentTz(date).format(timeLocaleFormat)
+}
+
 
 export function itemsMap<T extends types.WithId>(items_: T[]): Map<number, T> {
     let map: Map<number, T> = new Map()

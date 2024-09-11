@@ -3,13 +3,15 @@ import { VCard, VCardText, VChip } from 'vuetify/components'
 import { VCalendar } from 'vuetify/labs/VCalendar'
 import { useStore } from '../store';
 import * as types from './types'
+import * as utils from './utils'
+
 
 const store = useStore()
 await store.init()
 function renderEvent(event: types.CalendarEvent) {
     return {
         title: `${event.company} - ${event.job}`,
-        subtitle: event.title,
+        subtitle: `${utils.formatTimeToLocale(event.start)}: ${event.title}`,
     }
 }
 </script>
