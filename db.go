@@ -18,7 +18,7 @@ var ddl string
 
 const DB_FILE = "data.db"
 
-func MakeDb() (context.Context, *db.Queries) {
+func MakeDb() (context.Context, *db.Queries, *sql.DB) {
 	isTest := IsTest()
 	fmt.Printf("running app (test=%t)\n", isTest)
 	if isTest {
@@ -56,7 +56,7 @@ func MakeDb() (context.Context, *db.Queries) {
 		setFixtures(ctx, queries)
 	}
 
-	return ctx, queries
+	return ctx, queries, dbConn
 }
 
 func unwrapFixture[T interface{}](res T, err error) T {

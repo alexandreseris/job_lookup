@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"job_lookup/db"
 	"strings"
@@ -12,13 +13,15 @@ type App struct {
 	appctx  context.Context
 	dbctx   context.Context
 	queries *db.Queries
+	db      *sql.DB
 }
 
 func NewApp() *App {
-	c, q := MakeDb()
+	c, q, db := MakeDb()
 	return &App{
 		dbctx:   c,
 		queries: q,
+		db:      db,
 	}
 }
 
@@ -125,29 +128,35 @@ func (a *App) DeleteCompany(item Company) error {
 	return wrapError(a.queries.DeleteCompany(a.dbctx, item.Name), "DeleteCompany")
 }
 
-func setCompanyType(a *App, companyId int64, companyTypes []string) error {
-	err := a.queries.DeleteCompanyTypeRel(a.dbctx, companyId)
+func setCompanyType(a *App, queries *db.Queries, companyId int64, companyTypes []string) error {
+	err := queries.DeleteCompanyTypeRel(a.dbctx, companyId)
 	if err != nil {
-		return err
+		return wrapError(err, "setCompanyType/DeleteCompanyTypeRel")
 	}
 	for _, ct := range companyTypes {
-		dbCt, err := a.queries.GetCompanyType(a.dbctx, ct)
+		dbCt, err := queries.GetCompanyType(a.dbctx, ct)
 		if err != nil {
-			return err
+			return wrapError(err, "setCompanyType/GetCompanyType")
 		}
-		_, err = a.queries.InsertCompanyTypeRel(a.dbctx, db.InsertCompanyTypeRelParams{
+		_, err = queries.InsertCompanyTypeRel(a.dbctx, db.InsertCompanyTypeRelParams{
 			CompanyID:     companyId,
 			CompanyTypeID: dbCt.ID,
 		})
 		if err != nil {
-			return err
+			return wrapError(err, "setCompanyType/InsertCompanyTypeRel")
 		}
 	}
 	return nil
 }
 
 func (a *App) UpdateCompany(item Company) error {
-	err := a.queries.UpdateCompany(a.dbctx, db.UpdateCompanyParams{
+	tx, err := a.db.Begin()
+	if err != nil {
+		return wrapError(err, "UpdateCompany/Begin")
+	}
+	defer tx.Rollback()
+	queries := a.queries.WithTx(tx)
+	err = queries.UpdateCompany(a.dbctx, db.UpdateCompanyParams{
 		ID:    item.ID,
 		Name:  item.Name,
 		Notes: item.Notes,
@@ -155,22 +164,37 @@ func (a *App) UpdateCompany(item Company) error {
 	if err != nil {
 		return wrapError(err, "UpdateCompany")
 	}
-	return wrapError(setCompanyType(a, item.ID, item.CompanyTypes), "UpdateCompany/setCompanyType")
+	err = setCompanyType(a, queries, item.ID, item.CompanyTypes)
+	if err != nil {
+		return wrapError(err, "UpdateCompany/setCompanyType")
+	}
+	return wrapError(tx.Commit(), "UpdateCompany/Commit")
 }
 
 func (a *App) InsertCompany(item Company) (Company, error) {
-	c, err := a.queries.InsertCompany(a.dbctx, db.InsertCompanyParams{
+	tx, err := a.db.Begin()
+	if err != nil {
+		return Company{}, wrapError(err, "InsertCompany/Begin")
+	}
+	defer tx.Rollback()
+	queries := a.queries.WithTx(tx)
+
+	c, err := queries.InsertCompany(a.dbctx, db.InsertCompanyParams{
 		Name:  item.Name,
 		Notes: item.Notes,
 	})
 	if err != nil {
 		return Company{}, wrapError(err, "InsertCompany")
 	}
-	err = setCompanyType(a, c.ID, item.CompanyTypes)
+	err = setCompanyType(a, queries, c.ID, item.CompanyTypes)
 	if err != nil {
 		return Company{}, wrapError(err, "InsertCompany/setCompanyType")
 	}
 	item.ID = c.ID
+	err = tx.Commit()
+	if err != nil {
+		return Company{}, wrapError(tx.Commit(), "InsertCompany/Commit")
+	}
 	return item, nil
 }
 
@@ -411,45 +435,52 @@ func (a *App) ListEvents() ([]Event, error) {
 	), nil
 }
 
-func setEventContacts(a *App, event Event) error {
-	err := a.queries.DeleteEventContact(a.dbctx, event.ID)
+func setEventContacts(a *App, queries *db.Queries, event Event) error {
+	err := queries.DeleteEventContact(a.dbctx, event.ID)
 	if err != nil {
-		return err
+		return wrapError(err, "setEventContacts/DeleteEventContact")
 	}
 	for _, c := range event.Contacts {
 		firstName, lastName := splitContactNames(c)
-		contactId, err := a.queries.GetContactIdByNames(a.dbctx, db.GetContactIdByNamesParams{
+		contactId, err := queries.GetContactIdByNames(a.dbctx, db.GetContactIdByNamesParams{
 			FistName: firstName,
 			LastName: lastName,
 			Name:     event.CompanyName,
 		})
 		if err != nil {
-			return err
+			return wrapError(err, "setEventContacts/GetContactIdByNames")
 		}
-		_, err = a.queries.InsertEventContact(a.dbctx, db.InsertEventContactParams{
+		_, err = queries.InsertEventContact(a.dbctx, db.InsertEventContactParams{
 			EventID:   event.ID,
 			ContactID: contactId,
 		})
 		if err != nil {
-			return err
+			return wrapError(err, "setEventContacts/InsertEventContact")
 		}
 	}
 	return nil
 }
 
 func (a *App) InsertEvent(item Event) (Event, error) {
-	s, err := a.queries.GetEventSourceIdByName(a.dbctx, item.Source)
+	tx, err := a.db.Begin()
+	if err != nil {
+		return Event{}, wrapError(err, "InsertEvent/Begin")
+	}
+	defer tx.Rollback()
+	queries := a.queries.WithTx(tx)
+
+	s, err := queries.GetEventSourceIdByName(a.dbctx, item.Source)
 	if err != nil {
 		return Event{}, wrapError(err, "InsertEvent/GetEventSourceIdByName")
 	}
-	ja, err := a.queries.GetJobApplicationIdByName(a.dbctx, db.GetJobApplicationIdByNameParams{
+	ja, err := queries.GetJobApplicationIdByName(a.dbctx, db.GetJobApplicationIdByNameParams{
 		JobTitle: item.JobTitle,
 		Name:     item.CompanyName,
 	})
 	if err != nil {
 		return Event{}, wrapError(err, "InsertEvent/GetJobApplicationIdByName")
 	}
-	newitem, err := a.queries.InsertEvent(a.dbctx, db.InsertEventParams{
+	newitem, err := queries.InsertEvent(a.dbctx, db.InsertEventParams{
 		SourceID:         s,
 		JobApplicationID: ja,
 		Title:            item.Title,
@@ -460,9 +491,13 @@ func (a *App) InsertEvent(item Event) (Event, error) {
 		return Event{}, wrapError(err, "InsertEvent")
 	}
 	item.ID = newitem.ID
-	err = setEventContacts(a, item)
+	err = setEventContacts(a, queries, item)
 	if err != nil {
 		return Event{}, wrapError(err, "InsertEvent/setEventContacts")
+	}
+	err = tx.Commit()
+	if err != nil {
+		return Event{}, wrapError(err, "InsertEvent/Commit")
 	}
 	return item, nil
 }
@@ -470,18 +505,25 @@ func (a *App) DeleteEvent(item Event) error {
 	return wrapError(a.queries.DeleteEvent(a.dbctx, item.ID), "DeleteEvent")
 }
 func (a *App) UpdateEvent(item Event) error {
-	s, err := a.queries.GetEventSourceIdByName(a.dbctx, item.Source)
+	tx, err := a.db.Begin()
+	if err != nil {
+		return wrapError(err, "UpdateEvent/Begin")
+	}
+	defer tx.Rollback()
+	queries := a.queries.WithTx(tx)
+
+	s, err := queries.GetEventSourceIdByName(a.dbctx, item.Source)
 	if err != nil {
 		return wrapError(err, "UpdateEvent/GetEventSourceIdByName")
 	}
-	ja, err := a.queries.GetJobApplicationIdByName(a.dbctx, db.GetJobApplicationIdByNameParams{
+	ja, err := queries.GetJobApplicationIdByName(a.dbctx, db.GetJobApplicationIdByNameParams{
 		JobTitle: item.JobTitle,
 		Name:     item.CompanyName,
 	})
 	if err != nil {
 		return wrapError(err, "UpdateEvent/GetJobApplicationIdByName")
 	}
-	err = a.queries.UpdateEvent(a.dbctx, db.UpdateEventParams{
+	err = queries.UpdateEvent(a.dbctx, db.UpdateEventParams{
 		SourceID:         s,
 		JobApplicationID: ja,
 		Title:            item.Title,
@@ -492,5 +534,9 @@ func (a *App) UpdateEvent(item Event) error {
 	if err != nil {
 		return wrapError(err, "UpdateEvent")
 	}
-	return setEventContacts(a, item)
+	err = setEventContacts(a, queries, item)
+	if err != nil {
+		return wrapError(err, "UpdateEvent/setEventContacts")
+	}
+	return wrapError(tx.Commit(), "UpdateEvent/Commit")
 }
