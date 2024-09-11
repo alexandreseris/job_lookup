@@ -166,10 +166,12 @@ async function save() {
     await store.forceInit()
 }
 
-function deleteItem(item: T) {
+function deleteItem(index: number) {
+    let arrayCp = [...props.items]
+    arrayCp.splice(index, 1)
     replaceArrayContent(
         props.items,
-        props.items.filter(function (e) { return e.id != item.id })
+        arrayCp
     )
 }
 
@@ -392,7 +394,7 @@ const searchFilter = computed(() => {
             </tr>
         </template>
 
-        <template v-slot:item="{ item }">
+        <template v-slot:item="{ item, index }">
             <tr v-show="!edit" class="v-data-table__tr">
                 <td :class="CELL_CLASSES" :style="getCellStyle(c)" v-for="c in props.columns">
                     <template v-if="Array.isArray(item[c.key])">
@@ -419,7 +421,7 @@ const searchFilter = computed(() => {
                         <template v-slot:activator="{ props }">
                             <div class="buttonActionContainer">
                                 <v-btn v-bind="props" color="secondary" variant="plain" icon="mdi-delete"
-                                    density="comfortable" @click="deleteItem(item)"></v-btn>
+                                    density="comfortable" @click="deleteItem(index)"></v-btn>
                             </div>
                         </template>
                     </v-tooltip>
