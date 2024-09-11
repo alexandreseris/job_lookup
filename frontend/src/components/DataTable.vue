@@ -179,7 +179,7 @@ function deleteItem(index: number) {
 
 function newItem() {
     edit.value = true
-    props.items.push(Object.assign({}, props.emptyItem))
+    replaceArrayContent(props.items, [Object.assign({}, props.emptyItem), ...props.items])
 }
 
 function requiredCheck(value: any): string | boolean {
