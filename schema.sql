@@ -76,7 +76,7 @@ CREATE TABLE event (
     source_id integer NOT NULL,
     job_application_id integer NOT NULL,
     title text NOT NULL,
-    date datetime NOT NULL,
+    date integer NOT NULL,
     notes text NOT NULL,
     CONSTRAINT fk_event_job_application FOREIGN KEY (job_application_id) REFERENCES job_application(id) ON DELETE CASCADE,
     CONSTRAINT fk_event_source FOREIGN KEY (source_id) REFERENCES event_source(id) ON DELETE CASCADE

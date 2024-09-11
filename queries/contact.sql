@@ -1,7 +1,27 @@
 -- name: ListContact :many
 SELECT
     contact.*,
-    company.name AS company_name
+    company.name AS company_name,
+    (
+        SELECT
+            cast(max(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN event_contacts ON event_contacts.event_id = event.id
+        WHERE
+            event_contacts.contact_id = contact.id
+            AND event.date <= unixepoch()
+    ) AS last_event,
+    (
+        SELECT
+            cast(min(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN event_contacts ON event_contacts.event_id = event.id
+        WHERE
+            event_contacts.contact_id = contact.id
+            AND event.date >= unixepoch()
+    ) AS next_event
 FROM
     contact
     INNER JOIN company ON company.id = contact.company_id;

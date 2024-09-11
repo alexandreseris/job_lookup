@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 )
 
 const deleteEvent = `-- name: DeleteEvent :exec
@@ -76,11 +75,11 @@ VALUES
 `
 
 type InsertEventParams struct {
-	SourceID         int64     `json:"source_id"`
-	JobApplicationID int64     `json:"job_application_id"`
-	Title            string    `json:"title"`
-	Date             time.Time `json:"date"`
-	Notes            string    `json:"notes"`
+	SourceID         int64  `json:"source_id"`
+	JobApplicationID int64  `json:"job_application_id"`
+	Title            string `json:"title"`
+	Date             int64  `json:"date"`
+	Notes            string `json:"notes"`
 }
 
 func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event, error) {
@@ -153,16 +152,16 @@ FROM
 `
 
 type ListEventRow struct {
-	ID               int64     `json:"id"`
-	SourceID         int64     `json:"source_id"`
-	JobApplicationID int64     `json:"job_application_id"`
-	Title            string    `json:"title"`
-	Date             time.Time `json:"date"`
-	Notes            string    `json:"notes"`
-	Source           string    `json:"source"`
-	CompanyName      string    `json:"company_name"`
-	JobTitle         string    `json:"job_title"`
-	Contact          Contact   `json:"contact"`
+	ID               int64   `json:"id"`
+	SourceID         int64   `json:"source_id"`
+	JobApplicationID int64   `json:"job_application_id"`
+	Title            string  `json:"title"`
+	Date             int64   `json:"date"`
+	Notes            string  `json:"notes"`
+	Source           string  `json:"source"`
+	CompanyName      string  `json:"company_name"`
+	JobTitle         string  `json:"job_title"`
+	Contact          Contact `json:"contact"`
 }
 
 func (q *Queries) ListEvent(ctx context.Context) ([]ListEventRow, error) {
@@ -250,12 +249,12 @@ WHERE
 `
 
 type UpdateEventParams struct {
-	SourceID         int64     `json:"source_id"`
-	JobApplicationID int64     `json:"job_application_id"`
-	Title            string    `json:"title"`
-	Date             time.Time `json:"date"`
-	Notes            string    `json:"notes"`
-	ID               int64     `json:"id"`
+	SourceID         int64  `json:"source_id"`
+	JobApplicationID int64  `json:"job_application_id"`
+	Title            string `json:"title"`
+	Date             int64  `json:"date"`
+	Notes            string `json:"notes"`
+	ID               int64  `json:"id"`
 }
 
 func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) error {

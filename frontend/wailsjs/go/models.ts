@@ -42,7 +42,56 @@ export namespace db {
 	        this.name = source["name"];
 	    }
 	}
-	export class ListContactRow {
+
+}
+
+export namespace main {
+	
+	export class Company {
+	    id: number;
+	    name: string;
+	    notes: string;
+	    company_types: string[];
+	    application_cnt: number;
+	    // Go type: time
+	    last_event: any;
+	    // Go type: time
+	    next_event: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new Company(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.notes = source["notes"];
+	        this.company_types = source["company_types"];
+	        this.application_cnt = source["application_cnt"];
+	        this.last_event = this.convertValues(source["last_event"], null);
+	        this.next_event = this.convertValues(source["next_event"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Contact {
 	    id: number;
 	    company_id: number;
 	    job_position: string;
@@ -52,9 +101,13 @@ export namespace db {
 	    phone_number: string;
 	    notes: string;
 	    company_name: string;
+	    // Go type: time
+	    last_event: any;
+	    // Go type: time
+	    next_event: any;
 	
 	    static createFrom(source: any = {}) {
-	        return new ListContactRow(source);
+	        return new Contact(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -68,54 +121,27 @@ export namespace db {
 	        this.phone_number = source["phone_number"];
 	        this.notes = source["notes"];
 	        this.company_name = source["company_name"];
-	    }
-	}
-	export class ListJobApplicationRow {
-	    id: number;
-	    company_id: number;
-	    status_id: number;
-	    job_title: string;
-	    notes: string;
-	    status_name: string;
-	    company_name: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new ListJobApplicationRow(source);
+	        this.last_event = this.convertValues(source["last_event"], null);
+	        this.next_event = this.convertValues(source["next_event"], null);
 	    }
 	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.company_id = source["company_id"];
-	        this.status_id = source["status_id"];
-	        this.job_title = source["job_title"];
-	        this.notes = source["notes"];
-	        this.status_name = source["status_name"];
-	        this.company_name = source["company_name"];
-	    }
-	}
-
-}
-
-export namespace main {
-	
-	export class Company {
-	    id: number;
-	    name: string;
-	    notes: string;
-	    company_types: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new Company(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.name = source["name"];
-	        this.notes = source["notes"];
-	        this.company_types = source["company_types"];
-	    }
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 	export class Event {
 	    id: number;
@@ -142,6 +168,56 @@ export namespace main {
 	        this.job_title = source["job_title"];
 	        this.company_name = source["company_name"];
 	        this.contacts = source["contacts"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class JobApplication {
+	    id: number;
+	    company_id: number;
+	    status_id: number;
+	    job_title: string;
+	    notes: string;
+	    status_name: string;
+	    company_name: string;
+	    event_cnt: number;
+	    // Go type: time
+	    last_event: any;
+	    // Go type: time
+	    next_event: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new JobApplication(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.company_id = source["company_id"];
+	        this.status_id = source["status_id"];
+	        this.job_title = source["job_title"];
+	        this.notes = source["notes"];
+	        this.status_name = source["status_name"];
+	        this.company_name = source["company_name"];
+	        this.event_cnt = source["event_cnt"];
+	        this.last_event = this.convertValues(source["last_event"], null);
+	        this.next_event = this.convertValues(source["next_event"], null);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

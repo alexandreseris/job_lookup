@@ -121,13 +121,13 @@ func setFixtures(ctx context.Context, queries *db.Queries) {
 	baseDate1 := baseDate.AddDate(0, 0, 1)
 	baseDate2 := baseDate1.AddDate(0, 0, 1)
 	e1 := unwrapFixture(queries.InsertEvent(ctx, db.InsertEventParams{
-		JobApplicationID: j1.ID, SourceID: es1.ID, Title: "first interview", Date: baseDate, Notes: "event 1 yada yada"}))
+		JobApplicationID: j1.ID, SourceID: es1.ID, Title: "first interview", Date: baseDate.Unix(), Notes: "event 1 yada yada"}))
 	e2 := unwrapFixture(queries.InsertEvent(ctx, db.InsertEventParams{
-		JobApplicationID: j2.ID, SourceID: es2.ID, Title: "first interview", Date: baseDate, Notes: "event 2 yada yada"}))
+		JobApplicationID: j2.ID, SourceID: es2.ID, Title: "first interview", Date: baseDate.Unix(), Notes: "event 2 yada yada"}))
 	e3 := unwrapFixture(queries.InsertEvent(ctx, db.InsertEventParams{
-		JobApplicationID: j3.ID, SourceID: es1.ID, Title: "first interview", Date: baseDate1, Notes: "event 3 yada yada"}))
+		JobApplicationID: j3.ID, SourceID: es1.ID, Title: "first interview", Date: baseDate1.Unix(), Notes: "event 3 yada yada"}))
 	e4 := unwrapFixture(queries.InsertEvent(ctx, db.InsertEventParams{
-		JobApplicationID: j3.ID, SourceID: es2.ID, Title: "second interview", Date: baseDate2, Notes: "event 4 yada yada"}))
+		JobApplicationID: j3.ID, SourceID: es2.ID, Title: "second interview", Date: baseDate2.Unix(), Notes: "event 4 yada yada"}))
 
 	unwrapFixture(queries.InsertEventContact(ctx, db.InsertEventContactParams{
 		EventID: e1.ID, ContactID: con1.ID}))

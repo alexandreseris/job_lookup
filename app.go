@@ -71,10 +71,13 @@ func (a *App) InsertCompanyType(item db.CompanyType) (db.CompanyType, error) {
 }
 
 type Company struct {
-	ID           int64    `json:"id"`
-	Name         string   `json:"name"`
-	Notes        string   `json:"notes"`
-	CompanyTypes []string `json:"company_types"`
+	ID             int64     `json:"id"`
+	Name           string    `json:"name"`
+	Notes          string    `json:"notes"`
+	CompanyTypes   []string  `json:"company_types"`
+	ApplicationCnt int64     `json:"application_cnt"`
+	LastEvent      time.Time `json:"last_event"`
+	NextEvent      time.Time `json:"next_event"`
 }
 
 func (a *App) ListCompanies() ([]Company, error) {
@@ -89,6 +92,9 @@ func (a *App) ListCompanies() ([]Company, error) {
 			g.ID = r[0].ID
 			g.Name = r[0].Name
 			g.Notes = r[0].Notes
+			g.ApplicationCnt = r[0].ApplicationCnt
+			g.LastEvent = time.Unix(r[0].LastEvent, 0)
+			g.NextEvent = time.Unix(r[0].NextEvent, 0)
 			for _, sub := range r {
 				g.CompanyTypes = append(g.CompanyTypes, sub.CompanyType.Name)
 			}
@@ -181,13 +187,48 @@ func (a *App) UpdateEventSource(item db.EventSource) error {
 	})
 }
 
-func (a *App) ListContact() ([]db.ListContactRow, error) {
-	return a.queries.ListContact(a.dbctx)
+type Contact struct {
+	ID          int64     `json:"id"`
+	CompanyID   int64     `json:"company_id"`
+	JobPosition string    `json:"job_position"`
+	FistName    string    `json:"fist_name"`
+	LastName    string    `json:"last_name"`
+	Email       string    `json:"email"`
+	PhoneNumber string    `json:"phone_number"`
+	Notes       string    `json:"notes"`
+	CompanyName string    `json:"company_name"`
+	LastEvent   time.Time `json:"last_event"`
+	NextEvent   time.Time `json:"next_event"`
 }
-func (a *App) InsertContact(item db.ListContactRow) (db.ListContactRow, error) {
+
+func (a *App) ListContact() ([]Contact, error) {
+	res, err := a.queries.ListContact(a.dbctx)
+	if err != nil {
+		return nil, err
+	}
+	contacts := make([]Contact, len(res))
+	for i := range res {
+		dbContact := res[i]
+		contacts[i] = Contact{
+			ID:          dbContact.ID,
+			CompanyID:   dbContact.CompanyID,
+			JobPosition: dbContact.JobPosition,
+			FistName:    dbContact.FistName,
+			LastName:    dbContact.LastName,
+			Email:       dbContact.Email,
+			PhoneNumber: dbContact.PhoneNumber,
+			Notes:       dbContact.Notes,
+			CompanyName: dbContact.CompanyName,
+			LastEvent:   time.Unix(dbContact.LastEvent, 0),
+			NextEvent:   time.Unix(dbContact.NextEvent, 0),
+		}
+	}
+	return contacts, err
+}
+func (a *App) InsertContact(item Contact) (Contact, error) {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
-		return db.ListContactRow{}, err
+		return Contact{}, err
 	}
 	newitem, err := a.queries.InsertContact(a.dbctx, db.InsertContactParams{
 		CompanyID:   c,
@@ -199,15 +240,15 @@ func (a *App) InsertContact(item db.ListContactRow) (db.ListContactRow, error) {
 		Notes:       item.Notes,
 	})
 	if err != nil {
-		return db.ListContactRow{}, err
+		return Contact{}, err
 	}
 	item.ID = newitem.ID
 	return item, nil
 }
-func (a *App) DeleteContact(item db.ListContactRow) error {
+func (a *App) DeleteContact(item Contact) error {
 	return a.queries.DeleteContact(a.dbctx, item.ID)
 }
-func (a *App) UpdateContact(item db.ListContactRow) error {
+func (a *App) UpdateContact(item Contact) error {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
 		return err
@@ -224,17 +265,50 @@ func (a *App) UpdateContact(item db.ListContactRow) error {
 	})
 }
 
-func (a *App) ListJobApplication() ([]db.ListJobApplicationRow, error) {
-	return a.queries.ListJobApplication(a.dbctx)
+type JobApplication struct {
+	ID          int64     `json:"id"`
+	CompanyID   int64     `json:"company_id"`
+	StatusID    int64     `json:"status_id"`
+	JobTitle    string    `json:"job_title"`
+	Notes       string    `json:"notes"`
+	StatusName  string    `json:"status_name"`
+	CompanyName string    `json:"company_name"`
+	EventCnt    int64     `json:"event_cnt"`
+	LastEvent   time.Time `json:"last_event"`
+	NextEvent   time.Time `json:"next_event"`
 }
-func (a *App) InsertJobApplication(item db.ListJobApplicationRow) (db.ListJobApplicationRow, error) {
+
+func (a *App) ListJobApplication() ([]JobApplication, error) {
+	res, err := a.queries.ListJobApplication(a.dbctx)
+	if err != nil {
+		return nil, err
+	}
+	applications := make([]JobApplication, len(res))
+	for i := range res {
+		dbApp := res[i]
+		applications[i] = JobApplication{
+			ID:          dbApp.ID,
+			CompanyID:   dbApp.CompanyID,
+			StatusID:    dbApp.StatusID,
+			JobTitle:    dbApp.JobTitle,
+			Notes:       dbApp.Notes,
+			StatusName:  dbApp.StatusName,
+			CompanyName: dbApp.CompanyName,
+			EventCnt:    dbApp.EventCnt,
+			LastEvent:   time.Unix(dbApp.LastEvent, 0),
+			NextEvent:   time.Unix(dbApp.NextEvent, 0),
+		}
+	}
+	return applications, err
+}
+func (a *App) InsertJobApplication(item JobApplication) (JobApplication, error) {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
-		return db.ListJobApplicationRow{}, err
+		return JobApplication{}, err
 	}
 	s, err := a.queries.GetJobApplicationStatusIdByName(a.dbctx, item.StatusName)
 	if err != nil {
-		return db.ListJobApplicationRow{}, err
+		return JobApplication{}, err
 	}
 	newitem, err := a.queries.InsertJobApplication(a.dbctx, db.InsertJobApplicationParams{
 		CompanyID: c,
@@ -243,15 +317,15 @@ func (a *App) InsertJobApplication(item db.ListJobApplicationRow) (db.ListJobApp
 		Notes:     item.Notes,
 	})
 	if err != nil {
-		return db.ListJobApplicationRow{}, err
+		return JobApplication{}, err
 	}
 	item.ID = newitem.ID
 	return item, nil
 }
-func (a *App) DeleteJobApplication(item db.ListJobApplicationRow) error {
+func (a *App) DeleteJobApplication(item JobApplication) error {
 	return a.queries.DeleteJobApplication(a.dbctx, item.ID)
 }
-func (a *App) UpdateJobApplication(item db.ListJobApplicationRow) error {
+func (a *App) UpdateJobApplication(item JobApplication) error {
 	c, err := a.queries.GetCompanyIdByName(a.dbctx, item.CompanyName)
 	if err != nil {
 		return err
@@ -300,7 +374,7 @@ func (a *App) ListEvents() ([]Event, error) {
 		func(r []db.ListEventRow, g *Event) {
 			g.ID = r[0].ID
 			g.Title = r[0].Title
-			g.Date = r[0].Date
+			g.Date = time.Unix(r[0].Date, 0)
 			g.Notes = r[0].Notes
 			g.Source = r[0].Source
 			g.JobTitle = r[0].JobTitle
@@ -354,7 +428,7 @@ func (a *App) InsertEvent(item Event) (Event, error) {
 		SourceID:         s,
 		JobApplicationID: ja,
 		Title:            item.Title,
-		Date:             item.Date,
+		Date:             item.Date.Unix(),
 		Notes:            item.Notes,
 	})
 	if err != nil {
@@ -386,7 +460,7 @@ func (a *App) UpdateEvent(item Event) error {
 		SourceID:         s,
 		JobApplicationID: ja,
 		Title:            item.Title,
-		Date:             item.Date,
+		Date:             item.Date.Unix(),
 		Notes:            item.Notes,
 		ID:               item.ID,
 	})

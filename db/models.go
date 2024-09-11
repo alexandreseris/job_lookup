@@ -4,10 +4,6 @@
 
 package db
 
-import (
-	"time"
-)
-
 type Company struct {
 	ID    int64  `json:"id"`
 	Name  string `json:"name"`
@@ -37,12 +33,12 @@ type Contact struct {
 }
 
 type Event struct {
-	ID               int64     `json:"id"`
-	SourceID         int64     `json:"source_id"`
-	JobApplicationID int64     `json:"job_application_id"`
-	Title            string    `json:"title"`
-	Date             time.Time `json:"date"`
-	Notes            string    `json:"notes"`
+	ID               int64  `json:"id"`
+	SourceID         int64  `json:"source_id"`
+	JobApplicationID int64  `json:"job_application_id"`
+	Title            string `json:"title"`
+	Date             int64  `json:"date"`
+	Notes            string `json:"notes"`
 }
 
 type EventContact struct {

@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { db } from '../../wailsjs/go/models'
+import { main } from '../../wailsjs/go/models'
 import * as back from '../../wailsjs/go/main/App'
 import DataTable from './DataTable.vue'
 import * as types from './types'
 import { useStore } from '../store';
 
 
-type Item = db.ListContactRow
+type Item = main.Contact
 
 const columns: types.Columns<Item> = [
     { key: 'company_name', title: "Company", type: "rel", requiered: true },
@@ -15,6 +15,8 @@ const columns: types.Columns<Item> = [
     { key: 'job_position', title: "Position", type: "string", requiered: true },
     { key: 'email', title: "Email", type: "string" },
     { key: 'phone_number', title: "Phone", type: "string" },
+    { key: "last_event", title: "Last event", type: "date", readOnly: true },
+    { key: "next_event", title: "Next event", type: "date", readOnly: true },
     { key: 'notes', title: "Notes", type: "multiline" },
 ]
 
@@ -28,6 +30,8 @@ const emptyItem = {
     last_name: "",
     notes: "",
     phone_number: "",
+    last_event: new Date(),
+    next_event: new Date(),
 } as Item
 
 const store = useStore()

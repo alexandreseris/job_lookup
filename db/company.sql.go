@@ -170,7 +170,35 @@ func (q *Queries) InsertCompanyTypeRel(ctx context.Context, arg InsertCompanyTyp
 const listCompany = `-- name: ListCompany :many
 SELECT
     company.id, company.name, company.notes,
-    company_type.id, company_type.name
+    company_type.id, company_type.name,
+    (
+        SELECT
+            count(*)
+        FROM
+            job_application
+        WHERE
+            job_application.company_id = company.id
+    ) AS application_cnt,
+    (
+        SELECT
+            cast(max(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN job_application ON job_application.id = event.job_application_id
+        WHERE
+            job_application.company_id = company.id
+            AND event.date <= unixepoch()
+    ) AS last_event,
+    (
+        SELECT
+            cast(min(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN job_application ON job_application.id = event.job_application_id
+        WHERE
+            job_application.company_id = company.id
+            AND event.date >= unixepoch()
+    ) AS next_event
 FROM
     company
     INNER JOIN company_type_rel ON company_type_rel.company_id = company.id
@@ -178,10 +206,13 @@ FROM
 `
 
 type ListCompanyRow struct {
-	ID          int64       `json:"id"`
-	Name        string      `json:"name"`
-	Notes       string      `json:"notes"`
-	CompanyType CompanyType `json:"company_type"`
+	ID             int64       `json:"id"`
+	Name           string      `json:"name"`
+	Notes          string      `json:"notes"`
+	CompanyType    CompanyType `json:"company_type"`
+	ApplicationCnt int64       `json:"application_cnt"`
+	LastEvent      int64       `json:"last_event"`
+	NextEvent      int64       `json:"next_event"`
 }
 
 func (q *Queries) ListCompany(ctx context.Context) ([]ListCompanyRow, error) {
@@ -199,6 +230,9 @@ func (q *Queries) ListCompany(ctx context.Context) ([]ListCompanyRow, error) {
 			&i.Notes,
 			&i.CompanyType.ID,
 			&i.CompanyType.Name,
+			&i.ApplicationCnt,
+			&i.LastEvent,
+			&i.NextEvent,
 		); err != nil {
 			return nil, err
 		}

@@ -11,9 +11,9 @@ export const useStore = defineStore('store', () => {
     const companies = ref<main.Company[]>([])
     const companyTypes = ref<db.CompanyType[]>([])
     const events = ref<main.Event[]>([])
-    const contacts = ref<db.ListContactRow[]>([])
+    const contacts = ref<main.Contact[]>([])
     const eventSource = ref<db.EventSource[]>([])
-    const applications = ref<db.ListJobApplicationRow[]>([])
+    const applications = ref<main.JobApplication[]>([])
     const applicationStatus = ref<db.JobApplicationStatus[]>([])
 
     async function loadData(callback: () => Promise<void>, errMessage: string) {
@@ -98,17 +98,17 @@ export const useStore = defineStore('store', () => {
         return companyTypes.value
             .map((e) => { return e.name })
     }
-    function findCompanyNamesFromContact(contact: db.ListContactRow): string[] {
+    function findCompanyNamesFromContact(contact: main.Contact): string[] {
         return companies.value
             .map((e) => { return e.name })
     }
 
-    function findCompanyNamesFromApplication(application: db.ListJobApplicationRow): string[] {
+    function findCompanyNamesFromApplication(application: main.JobApplication): string[] {
         return companies.value
             .map((e) => { return e.name })
     }
 
-    function findStatusNamesFromApplication(application: db.ListJobApplicationRow): string[] {
+    function findStatusNamesFromApplication(application: main.JobApplication): string[] {
         return applicationStatus.value
             .map((e) => { return e.name })
     }

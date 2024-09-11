@@ -6,14 +6,6 @@ A simple app to manage your job search notes
 
 ## Todo
 
-- Add stats data:
-  - companies:
-    - number of applications, last event, next event
-  - contact:
-    - last event, next event
-  - job application:
-    - number of event, last event, next event
-
 - Some elements have a black background for no reason (seems to be a bug in vuetify)
 
 ## Binaries used and versions

@@ -36,7 +36,33 @@ VALUES
 SELECT
     job_application.*,
     job_application_status.name AS status_name,
-    company.name AS company_name
+    company.name AS company_name,
+    (
+        SELECT
+            count(*)
+        FROM
+            event
+        WHERE
+            event.job_application_id = job_application.id
+    ) AS event_cnt,
+    (
+        SELECT
+            cast(max(event.date) AS integer)
+        FROM
+            event
+        WHERE
+            event.job_application_id = job_application.id
+            AND event.date <= unixepoch()
+    ) AS last_event,
+    (
+        SELECT
+            cast(min(event.date) AS integer)
+        FROM
+            event
+        WHERE
+            event.job_application_id = job_application.id
+            AND event.date >= unixepoch()
+    ) AS next_event
 FROM
     job_application
     INNER JOIN job_application_status ON job_application_status.id = job_application.status_id

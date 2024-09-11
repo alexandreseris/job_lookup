@@ -8,9 +8,12 @@ import { useStore } from '../store';
 type Item = main.Company
 
 const columns: types.Columns<Item> = [
-    { title: 'Name', key: 'name', type: "string", requiered: true },
-    { title: 'Types', key: 'company_types', type: "listrel", requiered: true },
-    { title: 'Notes', key: 'notes', type: "multiline" },
+    { key: 'name', title: 'Name', type: "string", requiered: true },
+    { key: 'company_types', title: 'Types', type: "listrel", requiered: true },
+    { key: 'application_cnt', title: 'Number of jobs', type: "int", readOnly: true },
+    { key: "last_event", title: "Last event", type: "date", readOnly: true },
+    { key: "next_event", title: "Next event", type: "date", readOnly: true },
+    { key: 'notes', title: 'Notes', type: "multiline" },
 ]
 
 const emptyItem = {
@@ -18,6 +21,10 @@ const emptyItem = {
     name: '',
     notes: '',
     company_types: [],
+    application_cnt: 0,
+    last_event: new Date(),
+    next_event: new Date(),
+    convertValues(a: any, classs: any, asMap: boolean = false): any { },
 } as Item
 
 

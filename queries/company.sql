@@ -24,7 +24,35 @@ LIMIT
 -- name: ListCompany :many
 SELECT
     company.*,
-    sqlc.embed(company_type)
+    sqlc.embed(company_type),
+    (
+        SELECT
+            count(*)
+        FROM
+            job_application
+        WHERE
+            job_application.company_id = company.id
+    ) AS application_cnt,
+    (
+        SELECT
+            cast(max(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN job_application ON job_application.id = event.job_application_id
+        WHERE
+            job_application.company_id = company.id
+            AND event.date <= unixepoch()
+    ) AS last_event,
+    (
+        SELECT
+            cast(min(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN job_application ON job_application.id = event.job_application_id
+        WHERE
+            job_application.company_id = company.id
+            AND event.date >= unixepoch()
+    ) AS next_event
 FROM
     company
     INNER JOIN company_type_rel ON company_type_rel.company_id = company.id

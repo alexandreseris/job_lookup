@@ -124,7 +124,33 @@ const listJobApplication = `-- name: ListJobApplication :many
 SELECT
     job_application.id, job_application.company_id, job_application.status_id, job_application.job_title, job_application.notes,
     job_application_status.name AS status_name,
-    company.name AS company_name
+    company.name AS company_name,
+    (
+        SELECT
+            count(*)
+        FROM
+            event
+        WHERE
+            event.job_application_id = job_application.id
+    ) AS event_cnt,
+    (
+        SELECT
+            cast(max(event.date) AS integer)
+        FROM
+            event
+        WHERE
+            event.job_application_id = job_application.id
+            AND event.date <= unixepoch()
+    ) AS last_event,
+    (
+        SELECT
+            cast(min(event.date) AS integer)
+        FROM
+            event
+        WHERE
+            event.job_application_id = job_application.id
+            AND event.date >= unixepoch()
+    ) AS next_event
 FROM
     job_application
     INNER JOIN job_application_status ON job_application_status.id = job_application.status_id
@@ -139,6 +165,9 @@ type ListJobApplicationRow struct {
 	Notes       string `json:"notes"`
 	StatusName  string `json:"status_name"`
 	CompanyName string `json:"company_name"`
+	EventCnt    int64  `json:"event_cnt"`
+	LastEvent   int64  `json:"last_event"`
+	NextEvent   int64  `json:"next_event"`
 }
 
 func (q *Queries) ListJobApplication(ctx context.Context) ([]ListJobApplicationRow, error) {
@@ -158,6 +187,9 @@ func (q *Queries) ListJobApplication(ctx context.Context) ([]ListJobApplicationR
 			&i.Notes,
 			&i.StatusName,
 			&i.CompanyName,
+			&i.EventCnt,
+			&i.LastEvent,
+			&i.NextEvent,
 		); err != nil {
 			return nil, err
 		}

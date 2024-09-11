@@ -352,7 +352,7 @@ const CELL_CLASSES = [
                             <v-card>
                                 <v-card-item>
                                     <v-textarea v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
-                                        :label="c.title" rows="40"></v-textarea>
+                                        :disabled="c.readOnly" :label="c.title" rows="40"></v-textarea>
                                 </v-card-item>
                                 <v-card-actions style="justify-content: flex-start;">
                                     <v-btn text="Close" color="primary" variant="text" density="comfortable"
@@ -362,12 +362,13 @@ const CELL_CLASSES = [
                         </template>
                     </v-dialog>
                     <v-number-input v-else-if="c.type === 'int'" v-model="item[c.key]" :rules="buildRules(c)"
-                        ref="inputs" density="compact" :width="INT_WIDTH"></v-number-input>
+                        ref="inputs" density="compact" :width="INT_WIDTH" :disabled="c.readOnly"></v-number-input>
                     <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
-                        :width="DATE_WIDTH" ref="inputs"></date-input>
+                        :width="DATE_WIDTH" ref="inputs" :disabled="c.readOnly"></date-input>
                     <v-select v-else-if="c.type === 'listrel' && props.listRelations" v-model="item[c.key] as string[]"
                         :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH">
+                        ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH"
+                        :disabled="c.readOnly">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle-outline'"></v-list-item>
@@ -375,7 +376,7 @@ const CELL_CLASSES = [
                     </v-select>
                     <v-select v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
                         :items="(props.relations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" density="compact" :width="REL_WIDTH">
+                        ref="inputs" density="compact" :width="REL_WIDTH" :disabled="c.readOnly">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle-outline'"></v-list-item>

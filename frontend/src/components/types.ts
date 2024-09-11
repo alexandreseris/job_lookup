@@ -15,6 +15,7 @@ export type Column<T> = {
     sortable?: boolean | undefined;
     type: HeaderType;
     requiered?: boolean | undefined;
+    readOnly?: boolean | undefined;
 }
 export type Columns<T> = Column<T>[]
 export type SortBy<T> = { key: KeyofItem<T>; order?: 'asc' | 'desc'; }[]

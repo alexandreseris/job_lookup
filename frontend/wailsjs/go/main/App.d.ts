@@ -7,13 +7,13 @@ export function DeleteCompany(arg1:main.Company):Promise<void>;
 
 export function DeleteCompanyType(arg1:db.CompanyType):Promise<void>;
 
-export function DeleteContact(arg1:db.ListContactRow):Promise<void>;
+export function DeleteContact(arg1:main.Contact):Promise<void>;
 
 export function DeleteEvent(arg1:main.Event):Promise<void>;
 
 export function DeleteEventSource(arg1:db.EventSource):Promise<void>;
 
-export function DeleteJobApplication(arg1:db.ListJobApplicationRow):Promise<void>;
+export function DeleteJobApplication(arg1:main.JobApplication):Promise<void>;
 
 export function DeleteJobApplicationStatus(arg1:db.JobApplicationStatus):Promise<void>;
 
@@ -21,13 +21,13 @@ export function InsertCompany(arg1:main.Company):Promise<main.Company>;
 
 export function InsertCompanyType(arg1:db.CompanyType):Promise<db.CompanyType>;
 
-export function InsertContact(arg1:db.ListContactRow):Promise<db.ListContactRow>;
+export function InsertContact(arg1:main.Contact):Promise<main.Contact>;
 
 export function InsertEvent(arg1:main.Event):Promise<main.Event>;
 
 export function InsertEventSource(arg1:db.EventSource):Promise<db.EventSource>;
 
-export function InsertJobApplication(arg1:db.ListJobApplicationRow):Promise<db.ListJobApplicationRow>;
+export function InsertJobApplication(arg1:main.JobApplication):Promise<main.JobApplication>;
 
 export function InsertJobApplicationStatus(arg1:db.JobApplicationStatus):Promise<db.JobApplicationStatus>;
 
@@ -35,13 +35,13 @@ export function ListCompanies():Promise<Array<main.Company>>;
 
 export function ListCompanyTypes():Promise<Array<db.CompanyType>>;
 
-export function ListContact():Promise<Array<db.ListContactRow>>;
+export function ListContact():Promise<Array<main.Contact>>;
 
 export function ListEventSource():Promise<Array<db.EventSource>>;
 
 export function ListEvents():Promise<Array<main.Event>>;
 
-export function ListJobApplication():Promise<Array<db.ListJobApplicationRow>>;
+export function ListJobApplication():Promise<Array<main.JobApplication>>;
 
 export function ListJobApplicationStatus():Promise<Array<db.JobApplicationStatus>>;
 
@@ -51,12 +51,12 @@ export function UpdateCompany(arg1:main.Company):Promise<void>;
 
 export function UpdateCompanyType(arg1:db.CompanyType):Promise<void>;
 
-export function UpdateContact(arg1:db.ListContactRow):Promise<void>;
+export function UpdateContact(arg1:main.Contact):Promise<void>;
 
 export function UpdateEvent(arg1:main.Event):Promise<void>;
 
 export function UpdateEventSource(arg1:db.EventSource):Promise<void>;
 
-export function UpdateJobApplication(arg1:db.ListJobApplicationRow):Promise<void>;
+export function UpdateJobApplication(arg1:main.JobApplication):Promise<void>;
 
 export function UpdateJobApplicationStatus(arg1:db.JobApplicationStatus):Promise<void>;

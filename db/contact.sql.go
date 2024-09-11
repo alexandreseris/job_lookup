@@ -100,7 +100,27 @@ func (q *Queries) InsertContact(ctx context.Context, arg InsertContactParams) (C
 const listContact = `-- name: ListContact :many
 SELECT
     contact.id, contact.company_id, contact.job_position, contact.fist_name, contact.last_name, contact.email, contact.phone_number, contact.notes,
-    company.name AS company_name
+    company.name AS company_name,
+    (
+        SELECT
+            cast(max(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN event_contacts ON event_contacts.event_id = event.id
+        WHERE
+            event_contacts.contact_id = contact.id
+            AND event.date <= unixepoch()
+    ) AS last_event,
+    (
+        SELECT
+            cast(min(event.date) AS integer)
+        FROM
+            event
+            INNER JOIN event_contacts ON event_contacts.event_id = event.id
+        WHERE
+            event_contacts.contact_id = contact.id
+            AND event.date >= unixepoch()
+    ) AS next_event
 FROM
     contact
     INNER JOIN company ON company.id = contact.company_id
@@ -116,6 +136,8 @@ type ListContactRow struct {
 	PhoneNumber string `json:"phone_number"`
 	Notes       string `json:"notes"`
 	CompanyName string `json:"company_name"`
+	LastEvent   int64  `json:"last_event"`
+	NextEvent   int64  `json:"next_event"`
 }
 
 func (q *Queries) ListContact(ctx context.Context) ([]ListContactRow, error) {
@@ -137,6 +159,8 @@ func (q *Queries) ListContact(ctx context.Context) ([]ListContactRow, error) {
 			&i.PhoneNumber,
 			&i.Notes,
 			&i.CompanyName,
+			&i.LastEvent,
+			&i.NextEvent,
 		); err != nil {
 			return nil, err
 		}
