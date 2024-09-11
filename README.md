@@ -6,10 +6,6 @@ A simple app to manage your job search notes
 
 ## Todo
 
-- Some modification fail on save
-
-- When renaming company_type or equivalent, the modification is not propagated to the relations (like companies), which leads to an inconsistent state. Workaround: when this kind of modification happens, refresh the data from the server
-
 - Add stats data:
   - companies:
     - number of applications, last event, next event

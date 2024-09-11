@@ -22,8 +22,10 @@ import { VNumberInput } from 'vuetify/labs/VNumberInput'
 import DateInput from './DateInput.vue'
 import * as types from './types'
 import * as utils from './utils'
+import { useStore } from '../store';
 
-type KeyofItem = keyof T
+
+const store = useStore()
 
 const props = defineProps<{
     items: T[]
@@ -156,6 +158,7 @@ async function save() {
         setAlert('success', "Saved", `Changes successfully saved (${insertCnt} inserts, ${updateCnt}, updates, ${deleteCnt} deletes)`)
     }
     edit.value = false
+    await store.forceInit()
 }
 
 function deleteItem(item: T) {

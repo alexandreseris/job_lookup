@@ -69,10 +69,7 @@ export const useStore = defineStore('store', () => {
         }, "failled to load job applications status")
     }
 
-    async function init() {
-        if (isInit) {
-            return
-        }
+    async function _init() {
         console.log("init data")
         await Promise.all([
             loadCompanies(),
@@ -83,7 +80,18 @@ export const useStore = defineStore('store', () => {
             loadJobApplication(),
             loadJobApplicationStatus(),
         ])
+    }
+
+    async function init() {
+        if (isInit) {
+            return
+        }
+        await _init()
         isInit = true
+    }
+
+    async function forceInit() {
+        await _init()
     }
 
     function findCompanyTypeNamesFromCompany(company: main.Company): string[] {
@@ -146,6 +154,7 @@ export const useStore = defineStore('store', () => {
 
     return {
         init,
+        forceInit,
         companies,
         companyTypes,
         events,
