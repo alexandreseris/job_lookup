@@ -439,10 +439,15 @@ const searchFilter = computed(() => {
                         density="compact" :width="STRING_WIDTH"></v-text-field>
                     <v-dialog v-else-if="c.type === 'multiline'" scrollable>
                         <template v-slot:activator="{ props: activatorProps }">
-                            <div class="buttonActionContainer">
-                                <v-btn v-bind="activatorProps" color="secondary" variant="plain" icon="mdi-arrow-expand"
-                                    density="comfortable"></v-btn>
-                            </div>
+                            <v-tooltip location="start" :disabled="formatCol(c, item[c.key]).length === 0">
+                                <template v-slot:activator="{ props: multiLineActivator }">
+                                    <div v-bind="multiLineActivator" class="buttonActionContainer">
+                                        <v-btn v-bind="activatorProps" color="secondary" variant="plain"
+                                            icon="mdi-arrow-expand" density="comfortable"></v-btn>
+                                    </div>
+                                </template>
+                                <div class="multiline">{{ formatCol(c, item[c.key]) }}</div>
+                            </v-tooltip>
                         </template>
                         <template v-slot:default="{ isActive }">
                             <v-card>
