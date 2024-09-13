@@ -29,9 +29,7 @@ import { Store } from '../stores/interface'
 
 
 
-const props = defineProps<{
-    store: Store<T>
-}>()
+const props = defineProps<{ store: Store<T> }>()
 
 await props.store.syncWithParents()
 
@@ -319,7 +317,7 @@ const searchFilter = computed(() => {
 
 <template>
     <v-alert :text="alertMessage.text" :title="alertMessage.title" :type="alertMessage.type" closable
-        v-model="alertMessage.displayed" elevation="24"></v-alert>
+        v-model="alertMessage.displayed" elevation="24" class="elevated"></v-alert>
 
     <v-card variant="tonal" color="secondary">
         <v-card-actions>
@@ -327,7 +325,8 @@ const searchFilter = computed(() => {
                 <v-row>
                     <v-col>
                         <v-text-field v-model="search" label="Search" density="compact" prepend-icon="mdi-file-search"
-                            :error-messages="invalidRegErrs" :error="searchRegIsInvalid" width="30em"></v-text-field>
+                            :error-messages="invalidRegErrs" :error="searchRegIsInvalid" width="30em"
+                            clearable></v-text-field>
                     </v-col>
                     <v-col>
                         <v-checkbox v-model="searchReg" label="Regex"></v-checkbox>
@@ -371,7 +370,7 @@ const searchFilter = computed(() => {
             <tr>
                 <template v-for="c in columns" :key="c.key">
                     <td class="cell" :style="getCellStyle(c as unknown as types.Column<T>)">
-                        <span class="mr-2 cursor-pointer" @click="() => toggleSort(c)">{{ c.title }}</span>
+                        <span class="mr-2 cursor-pointer header" @click="() => toggleSort(c)">{{ c.title }}</span>
                         <template v-if="isSorted(c)">
                             <v-icon :icon="getSortIcon(c)"></v-icon>
                         </template>
@@ -469,6 +468,16 @@ const searchFilter = computed(() => {
 </template>
 
 <style lang="css" scoped>
+.header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.elevated {
+    z-index: 100;
+    position: absolute;
+}
+
 .multiline {
     white-space: pre-wrap;
 }
