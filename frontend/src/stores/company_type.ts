@@ -10,14 +10,15 @@ type Item = db.ListCompanyTypeRow
 const ItemClass = db.ListCompanyTypeRow
 
 export const useCompanyTypeStore = defineStore("CompanyType", () => {
-    const companyStore = useCompanyStore()
-
     const items = ref<Item[]>([])
 
-    const columns: types.Columns<Item> = [
-        { title: 'Name', key: 'name', type: "string", requiered: true },
-        { title: 'Companies', key: 'companies', type: "int", readOnly: true },
-    ]
+    function getColumns() {
+        const columns: types.Columns<Item> = [
+            { title: 'Name', key: 'name', type: "string", requiered: true },
+            { title: 'Companies', key: 'companies', type: "int", readOnly: true },
+        ]
+        return columns
+    }
 
     async function select() {
         return await back.ListCompanyTypes()
@@ -29,6 +30,7 @@ export const useCompanyTypeStore = defineStore("CompanyType", () => {
         }, ItemClass)
     }
     async function syncWithChildrens() {
+        const companyStore = useCompanyStore()
         await Promise.all([syncItems(), companyStore.syncItems()])
 
     }
@@ -63,6 +65,6 @@ export const useCompanyTypeStore = defineStore("CompanyType", () => {
 
 
     return {
-        items, columns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromCompany
+        items, getColumns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromCompany
     }
 })

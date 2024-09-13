@@ -15,19 +15,21 @@ const ItemClass = main.JobApplication
 export const useJobApplicationStore = defineStore("JobApplication", () => {
     const companyStore = useCompanyStore()
     const jobApplicationStatusStore = useJobApplicationStatusStore()
-    const eventStore = useEventStore()
 
     const items = ref<Item[]>([])
 
-    const columns: types.Columns<Item> = [
-        { key: "company_name", title: "Company", type: "rel", requiered: true, relations: companyStore.findNamesFromApplication },
-        { key: "job_title", title: "Title", type: "string", requiered: true },
-        { key: "status_name", title: "Status", type: "rel", requiered: true, relations: jobApplicationStatusStore.findNamesFromApplication },
-        { key: "event_cnt", title: "Number of events", type: "int", readOnly: true },
-        { key: "last_event", title: "Last event", type: "date", readOnly: true },
-        { key: "next_event", title: "Next event", type: "date", readOnly: true },
-        { key: "notes", title: "Notes", type: "multiline" },
-    ]
+    function getColumns() {
+        const columns: types.Columns<Item> = [
+            { key: "company_name", title: "Company", type: "rel", requiered: true, relations: companyStore.findNamesFromApplication },
+            { key: "job_title", title: "Title", type: "string", requiered: true },
+            { key: "status_name", title: "Status", type: "rel", requiered: true, relations: jobApplicationStatusStore.findNamesFromApplication },
+            { key: "event_cnt", title: "Number of events", type: "int", readOnly: true },
+            { key: "last_event", title: "Last event", type: "date", readOnly: true },
+            { key: "next_event", title: "Next event", type: "date", readOnly: true },
+            { key: "notes", title: "Notes", type: "multiline" },
+        ]
+        return columns
+    }
 
     async function select() {
         let applicationConv = await back.ListJobApplication()
@@ -44,6 +46,7 @@ export const useJobApplicationStore = defineStore("JobApplication", () => {
         }, ItemClass)
     }
     async function syncWithChildrens() {
+        const eventStore = useEventStore()
         await Promise.all([syncItems(), eventStore.syncItems()])
     }
     async function syncWithParents() {
@@ -86,6 +89,6 @@ export const useJobApplicationStore = defineStore("JobApplication", () => {
     }
 
     return {
-        items, columns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromEvent
+        items, getColumns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromEvent
     }
 })

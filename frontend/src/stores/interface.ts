@@ -2,7 +2,7 @@ import * as types from '../components/types'
 
 export type Store<Item> = {
     items: Item[];
-    columns: types.Columns<Item>;
+    getColumns: () => types.Columns<Item>;
     syncItems: () => Promise<void>;
     syncWithChildrens: () => Promise<void>;
     syncWithParents: () => Promise<void>;

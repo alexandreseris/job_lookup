@@ -15,20 +15,20 @@ const ItemClass = main.Company
 
 export const useCompanyStore = defineStore("Company", () => {
     const companyTypeStore = useCompanyTypeStore()
-    const contactStore = useContactStore()
-    const jobApplicationStore = useJobApplicationStore()
-    const eventStore = useEventStore()
 
     const items = ref<Item[]>([])
 
-    const columns: types.Columns<Item> = [
-        { key: 'name', title: 'Name', type: "string", requiered: true },
-        { key: 'company_types', title: 'Types', type: "listrel", requiered: true, relations: companyTypeStore.findNamesFromCompany },
-        { key: 'application_cnt', title: 'Number of jobs', type: "int", readOnly: true },
-        { key: "last_event", title: "Last event", type: "date", readOnly: true },
-        { key: "next_event", title: "Next event", type: "date", readOnly: true },
-        { key: 'notes', title: 'Notes', type: "multiline" },
-    ]
+    function getColumns() {
+        const columns: types.Columns<Item> = [
+            { key: 'name', title: 'Name', type: "string", requiered: true },
+            { key: 'company_types', title: 'Types', type: "listrel", requiered: true, relations: companyTypeStore.findNamesFromCompany },
+            { key: 'application_cnt', title: 'Number of jobs', type: "int", readOnly: true },
+            { key: "last_event", title: "Last event", type: "date", readOnly: true },
+            { key: "next_event", title: "Next event", type: "date", readOnly: true },
+            { key: 'notes', title: 'Notes', type: "multiline" },
+        ]
+        return columns
+    }
 
     async function select() {
         let companiesConv = await back.ListCompanies()
@@ -47,6 +47,10 @@ export const useCompanyStore = defineStore("Company", () => {
 
     }
     async function syncWithChildrens() {
+        const contactStore = useContactStore()
+        const jobApplicationStore = useJobApplicationStore()
+        const eventStore = useEventStore()
+
         await Promise.all([syncItems(), contactStore.syncItems(), jobApplicationStore.syncItems(), eventStore.syncItems()])
     }
     async function syncWithParents() {
@@ -80,8 +84,10 @@ export const useCompanyStore = defineStore("Company", () => {
     }
 
     function findNamesFromContact(contact: main.Contact): string[] {
-        return items.value
+        const vals = items.value
             .map((e) => { return e.name })
+        console.log("y u no work", vals)
+        return vals
     }
 
     function findNamesFromApplication(application: main.JobApplication): string[] {
@@ -95,6 +101,6 @@ export const useCompanyStore = defineStore("Company", () => {
     }
 
     return {
-        items, columns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromContact, findNamesFromApplication, findNamesFromEvent
+        items, getColumns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromContact, findNamesFromApplication, findNamesFromEvent
     }
 })

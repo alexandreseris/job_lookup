@@ -21,16 +21,19 @@ export const useEventStore = defineStore("Event", () => {
 
     const items = ref<Item[]>([])
 
-    const columns: types.Columns<Item> = [
-        { key: "company_name", title: "Company", type: "rel", requiered: true, relations: companyStore.findNamesFromEvent },
-        { key: "job_title", title: "Job", type: "rel", requiered: true, relations: jobApplicationStore.findNamesFromEvent },
-        { key: "title", title: "Title", type: "string", requiered: true },
-        { key: "date", title: "Date", type: "date", requiered: true },
-        { key: "source", title: "Source", type: "rel", requiered: true, relations: eventSourceStore.findNamesFromEvent },
-        { key: "contacts", title: "Contacts", type: "listrel", relations: contactStore.findNamesFromEvent },
-        { key: "notes", title: "Notes", type: "multiline" },
+    function getColumns() {
+        const columns: types.Columns<Item> = [
+            { key: "company_name", title: "Company", type: "rel", requiered: true, relations: companyStore.findNamesFromEvent },
+            { key: "job_title", title: "Job", type: "rel", requiered: true, relations: jobApplicationStore.findNamesFromEvent },
+            { key: "title", title: "Title", type: "string", requiered: true },
+            { key: "date", title: "Date", type: "date", requiered: true },
+            { key: "source", title: "Source", type: "rel", requiered: true, relations: eventSourceStore.findNamesFromEvent },
+            { key: "contacts", title: "Contacts", type: "listrel", relations: contactStore.findNamesFromEvent },
+            { key: "notes", title: "Notes", type: "multiline" },
 
-    ]
+        ]
+        return columns
+    }
 
     async function select() {
         let eventsConv = await back.ListEvents()
@@ -98,6 +101,6 @@ export const useEventStore = defineStore("Event", () => {
     })
 
     return {
-        items, columns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, calendarEvents
+        items, getColumns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, calendarEvents
     }
 })

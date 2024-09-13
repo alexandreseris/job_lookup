@@ -33,9 +33,10 @@ const props = defineProps<{ store: Store<T> }>()
 
 await props.store.syncWithParents()
 
+const columns = props.store.getColumns()
 const columnsWithDelete: types.VuetifyHeaders = (
     [{ title: 'Delete', key: 'del', sortable: false }] as types.VuetifyHeaders
-).concat(props.store.columns.filter((e) => { return !e.readOnly }) as types.VuetifyHeaders)
+).concat(columns.filter((e) => { return !e.readOnly }) as types.VuetifyHeaders)
 const inputs = ref<types.Inputs[]>([])
 const alertMessage = ref<types.AlertMessage>({
     text: "",
@@ -82,7 +83,7 @@ async function toogleEdit() {
 
 function formatDateBeforeSend(item: T): T {
     let cp: T = Object.assign({}, item)
-    for (const col of props.store.columns) {
+    for (const col of columns) {
         if (col.type === "date") {
             if (item[col.key]) {
                 cp[col.key] = utils.formatDateForBackend(item[col.key] as Date) as T[keyof T]
@@ -363,8 +364,8 @@ const searchFilter = computed(() => {
         </v-card-actions>
     </v-card>
 
-    <v-data-table :headers="edit ? columnsWithDelete : props.store.columns as types.VuetifyHeaders"
-        :items="searchFilter" density="compact" height="65vh" items-per-page="-1" :items-per-page-options="[-1]">
+    <v-data-table :headers="edit ? columnsWithDelete : columns as types.VuetifyHeaders" :items="searchFilter"
+        density="compact" height="65vh" items-per-page="-1" :items-per-page-options="[-1]">
 
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
             <tr>
@@ -381,7 +382,7 @@ const searchFilter = computed(() => {
 
         <template v-slot:item="{ item, index }">
             <tr v-show="!edit" class="v-data-table__tr">
-                <td :class="CELL_CLASSES" :style="getCellStyle(c)" v-for="c in props.store.columns">
+                <td :class="CELL_CLASSES" :style="getCellStyle(c)" v-for="c in columns">
                     <template v-if="Array.isArray(item[c.key])">
                         <v-chip v-for="subitem in item[c.key]">
                             {{ subitem }}
@@ -412,8 +413,7 @@ const searchFilter = computed(() => {
                         </template>
                     </v-tooltip>
                 </td>
-                <td :class="CELL_CLASSES" v-for="c in props.store.columns.filter((e) => !e.readOnly)"
-                    :style="getCellStyle(c)">
+                <td :class="CELL_CLASSES" v-for="c in columns.filter((e) => !e.readOnly)" :style="getCellStyle(c)">
                     <v-text-field v-if="c.type === 'string'" v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
                         density="compact" :width="STRING_WIDTH"></v-text-field>
                     <v-dialog v-else-if="c.type === 'multiline'" scrollable>

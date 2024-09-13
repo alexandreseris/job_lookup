@@ -10,14 +10,15 @@ type Item = db.ListEventSourceRow
 const ItemClass = db.ListEventSourceRow
 
 export const useEventSourceStore = defineStore("EventSource", () => {
-    const eventStore = useEventStore()
-
     const items = ref<Item[]>([])
 
-    const columns: types.Columns<Item> = [
-        { title: 'Name', key: 'name', type: "string", requiered: true },
-        { title: 'Events', key: 'events', type: "int", readOnly: true },
-    ]
+    function getColumns() {
+        const columns: types.Columns<Item> = [
+            { title: 'Name', key: 'name', type: "string", requiered: true },
+            { title: 'Events', key: 'events', type: "int", readOnly: true },
+        ]
+        return columns
+    }
 
     async function select() {
         return await back.ListEventSource()
@@ -29,6 +30,7 @@ export const useEventSourceStore = defineStore("EventSource", () => {
         }, ItemClass)
     }
     async function syncWithChildrens() {
+        const eventStore = useEventStore()
         await Promise.all([syncItems(), eventStore.syncItems()])
     }
     async function syncWithParents() {
@@ -61,6 +63,6 @@ export const useEventSourceStore = defineStore("EventSource", () => {
     }
 
     return {
-        items, columns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromEvent
+        items, getColumns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromEvent
     }
 })

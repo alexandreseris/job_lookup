@@ -13,21 +13,24 @@ const ItemClass = main.Company
 
 export const useContactStore = defineStore("Contact", () => {
     const companyStore = useCompanyStore()
-    const eventStore = useEventStore()
 
     const items = ref<Item[]>([])
 
-    const columns: types.Columns<Item> = [
-        { key: 'company_name', title: "Company", type: "rel", requiered: true, relations: companyStore.findNamesFromContact },
-        { key: 'fist_name', title: "Fist name", type: "string", requiered: true },
-        { key: 'last_name', title: "Last name", type: "string", requiered: true },
-        { key: 'job_position', title: "Position", type: "string", requiered: true },
-        { key: 'email', title: "Email", type: "string" },
-        { key: 'phone_number', title: "Phone", type: "string" },
-        { key: "last_event", title: "Last event", type: "date", readOnly: true },
-        { key: "next_event", title: "Next event", type: "date", readOnly: true },
-        { key: 'notes', title: "Notes", type: "multiline" },
-    ]
+
+    function getColumns() {
+        const columns: types.Columns<Item> = [
+            { key: 'company_name', title: "Company", type: "rel", requiered: true, relations: companyStore.findNamesFromContact },
+            { key: 'fist_name', title: "Fist name", type: "string", requiered: true },
+            { key: 'last_name', title: "Last name", type: "string", requiered: true },
+            { key: 'job_position', title: "Position", type: "string", requiered: true },
+            { key: 'email', title: "Email", type: "string" },
+            { key: 'phone_number', title: "Phone", type: "string" },
+            { key: "last_event", title: "Last event", type: "date", readOnly: true },
+            { key: "next_event", title: "Next event", type: "date", readOnly: true },
+            { key: 'notes', title: "Notes", type: "multiline" },
+        ]
+        return columns
+    }
 
     async function select() {
         let contactConv = await back.ListContact()
@@ -44,6 +47,7 @@ export const useContactStore = defineStore("Contact", () => {
         }, ItemClass)
     }
     async function syncWithChildrens() {
+        const eventStore = useEventStore()
         await Promise.all([syncItems(), eventStore.syncItems()])
     }
     async function syncWithParents() {
@@ -87,6 +91,6 @@ export const useContactStore = defineStore("Contact", () => {
     }
 
     return {
-        items, columns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromEvent
+        items, getColumns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromEvent
     }
 })

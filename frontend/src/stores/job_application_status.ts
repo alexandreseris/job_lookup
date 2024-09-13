@@ -11,15 +11,15 @@ const ItemClass = db.ListJobApplicationStatusRow
 
 
 export const useJobApplicationStatusStore = defineStore("JobApplicationStatus", () => {
-    const jobApplicationStore = useJobApplicationStore()
-
     const items = ref<Item[]>([])
 
-    const columns: types.Columns<Item> = [
-        { title: 'Name', key: 'name', type: "string", requiered: true },
-        { title: 'Jobs', key: 'applications', type: "int", readOnly: true },
-    ]
-
+    function getColumns() {
+        const columns: types.Columns<Item> = [
+            { title: 'Name', key: 'name', type: "string", requiered: true },
+            { title: 'Jobs', key: 'applications', type: "int", readOnly: true },
+        ]
+        return columns
+    }
     async function select() {
         return await back.ListJobApplicationStatus()
     }
@@ -30,6 +30,7 @@ export const useJobApplicationStatusStore = defineStore("JobApplicationStatus", 
         }, ItemClass)
     }
     async function syncWithChildrens() {
+        const jobApplicationStore = useJobApplicationStore()
         await Promise.all([syncItems(), jobApplicationStore.syncItems()])
     }
     async function syncWithParents() {
@@ -62,6 +63,6 @@ export const useJobApplicationStatusStore = defineStore("JobApplicationStatus", 
     }
 
     return {
-        items, columns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromApplication
+        items, getColumns, syncItems, syncWithChildrens, syncWithParents, add, eq, select, insert, delete_, update, findNamesFromApplication
     }
 })
