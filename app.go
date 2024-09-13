@@ -29,26 +29,33 @@ func (a *App) startup(ctx context.Context) {
 	a.appctx = ctx
 }
 
-func (a *App) Log(m string) {
-	fmt.Println(m)
-}
-
-func groupByMap[R interface{}, G interface{}, K comparable](
+func groupBy[R interface{}, G interface{}, K comparable](
 	data []R,
 	groupKey func(*R) K,
 	setGroupFromRaw func([]R, *G),
 ) []G {
-	groupedMap := make(map[K][]R)
-	for _, line := range data {
-		key := groupKey(&line)
-		lookup := groupedMap[key]
-		groupedMap[key] = append(lookup, line)
-	}
+	// does not scale well but that should be ok since there's not that much data
+	// and the function keep db order
+	treadtedSet := make(map[K]bool)
 	grouped := make([]G, 0)
-	for _, v := range groupedMap {
-		var newItem G
-		setGroupFromRaw(v, &newItem)
-		grouped = append(grouped, newItem)
+	l := len(data)
+	for i := range data {
+		item := data[i]
+		id := groupKey(&item)
+		if treadtedSet[id] {
+			continue
+		}
+		lines := []R{item}
+		for j := i + 1; j < l; j++ {
+			nextLine := data[j]
+			if id == groupKey(&nextLine) {
+				lines = append(lines, nextLine)
+			}
+		}
+		var groupedItem G
+		setGroupFromRaw(lines, &groupedItem)
+		grouped = append(grouped, groupedItem)
+		treadtedSet[id] = true
 	}
 	return grouped
 }
@@ -107,7 +114,7 @@ func (a *App) ListCompanies() ([]Company, error) {
 	if err != nil {
 		return nil, wrapError(err, "ListCompanies")
 	}
-	return groupByMap(
+	return groupBy(
 		c,
 		func(line *db.ListCompanyRow) int64 { return line.ID },
 		func(r []db.ListCompanyRow, g *Company) {
@@ -421,7 +428,7 @@ func (a *App) ListEvents() ([]Event, error) {
 	if err != nil {
 		return nil, wrapError(err, "ListEvents")
 	}
-	return groupByMap(
+	return groupBy(
 		e,
 		func(r *db.ListEventRow) int64 { return r.ID },
 		func(r []db.ListEventRow, g *Event) {

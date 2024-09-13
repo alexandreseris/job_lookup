@@ -86,10 +86,6 @@ export function ListJobApplicationStatus() {
   return window['go']['main']['App']['ListJobApplicationStatus']();
 }
 
-export function Log(arg1) {
-  return window['go']['main']['App']['Log'](arg1);
-}
-
 export function UpdateCompany(arg1) {
   return window['go']['main']['App']['UpdateCompany'](arg1);
 }

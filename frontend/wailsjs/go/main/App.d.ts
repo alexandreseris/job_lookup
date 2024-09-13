@@ -45,8 +45,6 @@ export function ListJobApplication():Promise<Array<main.JobApplication>>;
 
 export function ListJobApplicationStatus():Promise<Array<db.ListJobApplicationStatusRow>>;
 
-export function Log(arg1:string):Promise<void>;
-
 export function UpdateCompany(arg1:main.Company):Promise<void>;
 
 export function UpdateCompanyType(arg1:db.ListCompanyTypeRow):Promise<void>;
