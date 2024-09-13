@@ -36,7 +36,6 @@ export const useCompanyStore = defineStore("Company", () => {
             e.last_event = utils.parseBackendDateOpt(e.last_event)
             e.next_event = utils.parseBackendDateOpt(e.next_event)
         }
-        console.log(companiesConv)
         return companiesConv
 
     }
