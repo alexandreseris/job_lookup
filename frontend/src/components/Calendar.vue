@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { VCard, VCardText, VChip } from 'vuetify/components'
 import { VCalendar } from 'vuetify/labs/VCalendar'
-import { useStore } from '../store';
+import { useEventStore } from '../stores/event';
 import * as types from './types'
 import * as utils from './utils'
 
 
-const store = useStore()
-await store.init()
+const store = useEventStore()
+await store.syncWithParents()
 function renderEvent(event: types.CalendarEvent) {
     return {
         title: `${event.company} - ${event.job}`,

@@ -1,31 +1,10 @@
 <script lang="ts" setup>
-import { db } from '../../wailsjs/go/models'
-import * as back from '../../wailsjs/go/main/App'
 import DataTable from './DataTable.vue'
-import * as types from './types'
-import { useStore } from '../store'
+import { useCompanyTypeStore } from '../stores/company_type'
 
-
-type Item = db.ListCompanyTypeRow
-
-const columns: types.Columns<Item> = [
-    { title: 'Name', key: 'name', type: "string", requiered: true },
-    { title: 'Companies', key: 'companies', type: "int", readOnly: true },
-]
-
-const emptyItem = {
-    id: 0,
-    name: '',
-    companies: 0
-} as Item
-
-
-const store = useStore()
-await store.init()
+const store = useCompanyTypeStore()
 </script>
 
 <template>
-    <data-table :items="store.companyTypes" :delete="back.DeleteCompanyType" :update="back.UpdateCompanyType"
-        :insert="back.InsertCompanyType" :empty-item="emptyItem" :columns="columns">
-    </data-table>
+    <data-table :store="store"> </data-table>
 </template>

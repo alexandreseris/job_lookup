@@ -25,27 +25,19 @@ import { VNumberInput } from 'vuetify/labs/VNumberInput'
 import DateInput from './DateInput.vue'
 import * as types from './types'
 import * as utils from './utils'
-import { useStore } from '../store';
+import { Store } from '../stores/interface'
 
 
-const store = useStore()
 
 const props = defineProps<{
-    items: T[]
-    delete: types.Delete<T>
-    update: types.Update<T>
-    insert: types.Insert<T>
-    emptyItem: T
-    columns: types.Columns<T>
-    relations?: types.Relations<T>
-    listRelations?: types.ListRelations<T>
-    title?: string
+    store: Store<T>
 }>()
 
+await props.store.syncWithParents()
 
 const columnsWithDelete: types.VuetifyHeaders = (
     [{ title: 'Delete', key: 'del', sortable: false }] as types.VuetifyHeaders
-).concat(props.columns.filter((e) => { return !e.readOnly }) as types.VuetifyHeaders)
+).concat(props.store.columns.filter((e) => { return !e.readOnly }) as types.VuetifyHeaders)
 const inputs = ref<types.Inputs[]>([])
 const alertMessage = ref<types.AlertMessage>({
     text: "",
@@ -54,7 +46,6 @@ const alertMessage = ref<types.AlertMessage>({
     displayed: false,
 })
 const edit = ref(false)
-let itemsBackup = utils.deepToRaw(props.items)
 
 function setAlert(type: types.AlertType, title: string, message: string) {
     alertMessage.value.displayed = true
@@ -80,27 +71,20 @@ function setError(exception: any) {
     throw exception
 }
 
-function replaceArrayContent(current: T[], new_: T[]) {
-    current.length = 0
-    for (const item of new_) {
-        current.push(item)
-    }
-}
 
-function toogleEdit() {
+async function toogleEdit() {
     const isEdit = edit.value
     if (isEdit) {
-        replaceArrayContent(props.items, itemsBackup)
+        await props.store.syncItems()
         edit.value = false
     } else {
-        itemsBackup = utils.deepToRaw(props.items)
         edit.value = true
     }
 }
 
 function formatDateBeforeSend(item: T): T {
     let cp: T = Object.assign({}, item)
-    for (const col of props.columns) {
+    for (const col of props.store.columns) {
         if (col.type === "date") {
             if (item[col.key]) {
                 cp[col.key] = utils.formatDateForBackend(item[col.key] as Date) as T[keyof T]
@@ -120,27 +104,28 @@ async function save() {
     let insertCnt = 0
     let updateCnt = 0
     let deleteCnt = 0
-    let modifiedMap = utils.itemsMap(props.items)
-    let backupMap = utils.itemsMap(itemsBackup)
+    let modifiedMap = utils.itemsMap(props.store.items)
+    const itemsBackup = await props.store.select()
+    let backupMap = utils.itemsMap(await props.store.select())
     for (const oldItem of itemsBackup) {
         let delItem = modifiedMap.get(oldItem.id)
         if (!delItem) {
             // delete
             try {
-                await props.delete(formatDateBeforeSend(oldItem))
+                await props.store.delete_(formatDateBeforeSend(oldItem))
                 deleteCnt += 1
             } catch (e) {
                 setError(e)
             }
         }
     }
-    for (const modifiedItem of props.items) {
+    for (const modifiedItem of props.store.items) {
         let oldItem = backupMap.get(modifiedItem.id)
         let rawModifiedItem = utils.deepToRaw(modifiedItem)
         if (!oldItem) {
             // insert
             try {
-                let itemWithId = await props.insert(formatDateBeforeSend(modifiedItem))
+                let itemWithId = await props.store.insert(formatDateBeforeSend(modifiedItem))
                 modifiedItem.id = itemWithId.id
                 itemsBackup.push(rawModifiedItem)
                 insertCnt += 1
@@ -150,7 +135,7 @@ async function save() {
         } else if (!utils.areObjsEq(oldItem, rawModifiedItem)) {
             // update
             try {
-                await props.update(formatDateBeforeSend(modifiedItem))
+                await props.store.update(formatDateBeforeSend(modifiedItem))
                 updateCnt += 1
             } catch (e) {
                 setError(e)
@@ -165,21 +150,16 @@ async function save() {
         setAlert('success', "Saved", `Changes successfully saved (${insertCnt} inserts, ${updateCnt}, updates, ${deleteCnt} deletes)`)
     }
     edit.value = false
-    await store.forceInit()
+    await props.store.syncWithChildrens()
 }
 
 function deleteItem(index: number) {
-    let arrayCp = [...props.items]
-    arrayCp.splice(index, 1)
-    replaceArrayContent(
-        props.items,
-        arrayCp
-    )
+    props.store.items.splice(index, 1)
 }
 
 function newItem() {
     edit.value = true
-    replaceArrayContent(props.items, [Object.assign({}, props.emptyItem), ...props.items])
+    props.store.add()
 }
 
 function requiredCheck(value: any): string | boolean {
@@ -318,7 +298,7 @@ function compareValueToSearch(value: any): boolean {
 
 const searchFilter = computed(() => {
     if (search.value) {
-        return props.items.filter(
+        return props.store.items.filter(
             function (e) {
                 for (const key in e) {
                     let prop = e[key]
@@ -332,7 +312,7 @@ const searchFilter = computed(() => {
         )
     }
     invalidRegErrs.value = []
-    return props.items
+    return props.store.items
 })
 
 </script>
@@ -341,7 +321,7 @@ const searchFilter = computed(() => {
     <v-alert :text="alertMessage.text" :title="alertMessage.title" :type="alertMessage.type" closable
         v-model="alertMessage.displayed" elevation="24"></v-alert>
 
-    <v-card variant="tonal" color="secondary" :title="props.title">
+    <v-card variant="tonal" color="secondary">
         <v-card-actions>
             <v-container>
                 <v-row>
@@ -357,7 +337,7 @@ const searchFilter = computed(() => {
                             <template v-slot:activator="{ props }">
                                 <v-btn v-bind="props" color="secondary" variant="flat"
                                     :icon="edit ? 'mdi-cancel' : 'mdi-pencil'" density="comfortable"
-                                    @click="toogleEdit()"></v-btn>
+                                    @click="toogleEdit"></v-btn>
                             </template>
                         </v-tooltip>
                     </v-col>
@@ -365,7 +345,7 @@ const searchFilter = computed(() => {
                         <v-tooltip text="Add" location="top">
                             <template v-slot:activator="{ props }">
                                 <v-btn v-bind="props" color="secondary" variant="flat" icon="mdi-plus"
-                                    density="comfortable" @click="newItem()" v-show="edit"></v-btn>
+                                    density="comfortable" @click="newItem" v-show="edit"></v-btn>
                             </template>
                         </v-tooltip>
                     </v-col>
@@ -373,7 +353,7 @@ const searchFilter = computed(() => {
                         <v-tooltip text="Save" location="top">
                             <template v-slot:activator="{ props }">
                                 <v-btn v-bind="props" color="secondary" variant="flat" icon="mdi-content-save-all"
-                                    density="comfortable" @click="save()" v-show="edit"></v-btn>
+                                    density="comfortable" @click="save" v-show="edit"></v-btn>
                             </template>
                         </v-tooltip>
                     </v-col>
@@ -384,8 +364,8 @@ const searchFilter = computed(() => {
         </v-card-actions>
     </v-card>
 
-    <v-data-table :headers="edit ? columnsWithDelete : props.columns as types.VuetifyHeaders" :items="searchFilter"
-        density="compact" height="65vh" items-per-page="-1" :items-per-page-options="[-1]">
+    <v-data-table :headers="edit ? columnsWithDelete : props.store.columns as types.VuetifyHeaders"
+        :items="searchFilter" density="compact" height="65vh" items-per-page="-1" :items-per-page-options="[-1]">
 
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
             <tr>
@@ -402,7 +382,7 @@ const searchFilter = computed(() => {
 
         <template v-slot:item="{ item, index }">
             <tr v-show="!edit" class="v-data-table__tr">
-                <td :class="CELL_CLASSES" :style="getCellStyle(c)" v-for="c in props.columns">
+                <td :class="CELL_CLASSES" :style="getCellStyle(c)" v-for="c in props.store.columns">
                     <template v-if="Array.isArray(item[c.key])">
                         <v-chip v-for="subitem in item[c.key]">
                             {{ subitem }}
@@ -433,7 +413,7 @@ const searchFilter = computed(() => {
                         </template>
                     </v-tooltip>
                 </td>
-                <td :class="CELL_CLASSES" v-for="c in props.columns.filter((e) => !e.readOnly)"
+                <td :class="CELL_CLASSES" v-for="c in props.store.columns.filter((e) => !e.readOnly)"
                     :style="getCellStyle(c)">
                     <v-text-field v-if="c.type === 'string'" v-model="item[c.key]" :rules="buildRules(c)" ref="inputs"
                         density="compact" :width="STRING_WIDTH"></v-text-field>
@@ -466,18 +446,17 @@ const searchFilter = computed(() => {
                         ref="inputs" density="compact" :width="INT_WIDTH"></v-number-input>
                     <date-input v-else-if="c.type === 'date'" v-model="item[c.key] as Date" :rules="buildRules(c)"
                         :date-width="DATE_WIDTH" :time-width="TIME_WIDTH" ref="inputs"></date-input>
-                    <v-autocomplete v-else-if="c.type === 'listrel' && props.listRelations"
-                        v-model="item[c.key] as string[]"
-                        :items="(props.listRelations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" chips multiple clearable density="compact" :width="LISTREL_WIDTH">
+                    <v-autocomplete v-else-if="c.type === 'listrel' && c.relations" v-model="item[c.key] as string[]"
+                        :items="c.relations(item)" :rules="buildRules(c)" ref="inputs" chips multiple clearable
+                        density="compact" :width="LISTREL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string[]).indexOf(slotItem.item.props.value) != -1 ? 'mdi-checkbox-multiple-marked-circle' : 'mdi-checkbox-multiple-blank-circle-outline'"></v-list-item>
                         </template>
                     </v-autocomplete>
-                    <v-autocomplete v-else-if="c.type === 'rel' && props.relations" v-model="item[c.key] as string"
-                        :items="(props.relations[c.key] as types.RelationFinder<T>)(item)" :rules="buildRules(c)"
-                        ref="inputs" density="compact" :width="REL_WIDTH">
+                    <v-autocomplete v-else-if="c.type === 'rel' && c.relations" v-model="item[c.key] as string"
+                        :items="c.relations(item)" :rules="buildRules(c)" ref="inputs" density="compact"
+                        :width="REL_WIDTH">
                         <template v-slot:item="slotItem">
                             <v-list-item v-bind="slotItem.props" :active="false" :title="slotItem.item.props.value"
                                 :append-icon="(item[c.key] as string) == slotItem.item.props.value ? 'mdi-checkbox-marked-circle' : 'mdi-checkbox-blank-circle-outline'"></v-list-item>

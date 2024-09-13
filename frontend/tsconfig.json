@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "noErrorTruncation": false,
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",

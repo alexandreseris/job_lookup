@@ -9,6 +9,7 @@ export interface WithId {
 }
 type KeyofItem<T> = keyof T
 type HeaderType = "string" | "multiline" | "int" | "date" | "action" | "listrel" | "rel"
+export type RelationFinder<T> = (current_obj: T) => string[]
 export type Column<T> = {
     key: KeyofItem<T>;
     title: string;
@@ -16,11 +17,11 @@ export type Column<T> = {
     type: HeaderType;
     requiered?: boolean | undefined;
     readOnly?: boolean | undefined;
+    relations?: RelationFinder<T> | undefined;
 }
 export type Columns<T> = Column<T>[]
 export type SortBy<T> = { key: KeyofItem<T>; order?: 'asc' | 'desc'; }[]
 
-export type RelationFinder<T> = (current_obj: T) => string[]
 export type Relations<T> = { [K in keyof T]?: RelationFinder<T> }
 export type ListRelations<T> = { [K in keyof T]?: RelationFinder<T> }
 
