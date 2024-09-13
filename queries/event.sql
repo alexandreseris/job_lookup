@@ -10,7 +10,9 @@ SELECT
             event.source_id = event_source.id
     ) AS EVENTS
 FROM
-    event_source;
+    event_source
+ORDER BY
+    event_source.name;
 
 -- name: GetEventSourceIdByName :one
 SELECT
@@ -67,7 +69,10 @@ FROM
     INNER JOIN company ON company.id = job_application.company_id
     LEFT JOIN event_contacts ON event_contacts.event_id = event.id
     LEFT JOIN contact ON contact.id = event_contacts.contact_id
-    AND contact.company_id = company.id;
+    AND contact.company_id = company.id
+ORDER BY
+    event.date DESC,
+    company.name;
 
 -- name: DeleteEvent :exec
 DELETE FROM

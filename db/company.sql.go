@@ -213,6 +213,8 @@ FROM
     company
     INNER JOIN company_type_rel ON company_type_rel.company_id = company.id
     INNER JOIN company_type ON company_type.id = company_type_rel.company_type_id
+ORDER BY
+    company.name
 `
 
 type ListCompanyRow struct {
@@ -271,6 +273,8 @@ SELECT
     ) AS companies
 FROM
     company_type
+ORDER BY
+    name
 `
 
 type ListCompanyTypeRow struct {

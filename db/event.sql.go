@@ -151,6 +151,9 @@ FROM
     LEFT JOIN event_contacts ON event_contacts.event_id = event.id
     LEFT JOIN contact ON contact.id = event_contacts.contact_id
     AND contact.company_id = company.id
+ORDER BY
+    event.date DESC,
+    company.name
 `
 
 type ListEventRow struct {
@@ -215,6 +218,8 @@ SELECT
     ) AS EVENTS
 FROM
     event_source
+ORDER BY
+    event_source.name
 `
 
 type ListEventSourceRow struct {

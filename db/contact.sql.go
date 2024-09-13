@@ -134,6 +134,10 @@ SELECT
 FROM
     contact
     INNER JOIN company ON company.id = contact.company_id
+ORDER BY
+    company.name,
+    contact.fist_name,
+    contact.last_name
 `
 
 type ListContactRow struct {

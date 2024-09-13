@@ -165,6 +165,9 @@ FROM
     job_application
     INNER JOIN job_application_status ON job_application_status.id = job_application.status_id
     INNER JOIN company ON company.id = job_application.company_id
+ORDER BY
+    next_event DESC NULLS LAST,
+    last_event DESC NULLS LAST
 `
 
 type ListJobApplicationRow struct {
@@ -227,6 +230,8 @@ SELECT
     ) AS applications
 FROM
     job_application_status
+ORDER BY
+    job_application_status.name
 `
 
 type ListJobApplicationStatusRow struct {

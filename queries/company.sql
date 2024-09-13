@@ -66,7 +66,9 @@ SELECT
 FROM
     company
     INNER JOIN company_type_rel ON company_type_rel.company_id = company.id
-    INNER JOIN company_type ON company_type.id = company_type_rel.company_type_id;
+    INNER JOIN company_type ON company_type.id = company_type_rel.company_type_id
+ORDER BY
+    company.name;
 
 -- name: InsertCompany :one
 INSERT INTO
@@ -112,7 +114,9 @@ SELECT
             company_type_rel.company_type_id = company_type.id
     ) AS companies
 FROM
-    company_type;
+    company_type
+ORDER BY
+    name;
 
 -- name: InsertCompanyType :one
 INSERT INTO
