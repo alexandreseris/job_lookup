@@ -86,7 +86,6 @@ export const useCompanyStore = defineStore("Company", () => {
     function findNamesFromContact(contact: main.Contact): string[] {
         const vals = items.value
             .map((e) => { return e.name })
-        console.log("y u no work", vals)
         return vals
     }
 

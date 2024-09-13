@@ -365,7 +365,7 @@ const searchFilter = computed(() => {
     </v-card>
 
     <v-data-table :headers="edit ? columnsWithDelete : columns as types.VuetifyHeaders" :items="searchFilter"
-        density="compact" height="65vh" items-per-page="-1" :items-per-page-options="[-1]">
+        density="compact" height="65vh" items-per-page="10">
 
         <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
             <tr>
